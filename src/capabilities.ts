@@ -45,10 +45,8 @@ export function renderMatrix(catalog: ServiceCatalog): HTMLElement {
 
   const table = document.createElement("table");
   table.className = "matrix";
-
-  const caption = document.createElement("caption");
-  caption.textContent = `服务支持矩阵：${catalog.services.length} 个主服务 × ${catalog.sourceTypes.length} 类源类型`;
-  table.append(caption);
+  // 视觉上不再显示标题，改用无障碍名称，读屏仍能知道这是什么表。
+  table.setAttribute("aria-label", "服务支持矩阵");
 
   const headRow = document.createElement("tr");
   headRow.append(headerCell("服务"));

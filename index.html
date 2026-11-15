@@ -49,7 +49,6 @@
             <div class="composer-bar">
               <div class="composer-actions">
                 <button type="button" class="btn btn-ghost" id="clear-input">清空</button>
-                <button type="button" class="btn btn-ghost" id="fill-example">填入示例</button>
                 <button type="button" class="btn btn-ghost" id="paste-input">粘贴</button>
               </div>
               <p class="composer-hint" id="composer-hint" role="status">一行一条</p>
@@ -80,8 +79,7 @@
             <h2 class="empty-title">还没有可转换的地址</h2>
             <p class="empty-text">把 GitHub 源地址粘进上面的输入框，一行一条。</p>
             <div class="empty-actions">
-              <button type="button" class="btn btn-primary" id="empty-fill">填入示例</button>
-              <button type="button" class="btn btn-soft" id="empty-formats">支持的 6 类地址</button>
+              <button type="button" class="btn btn-soft" id="empty-formats">查看支持的格式</button>
             </div>
           </div>
 
@@ -118,7 +116,7 @@
                 aria-controls="rail-formats-body"
                 tabindex="0"
               >
-                支持的地址
+                支持的格式
               </button>
               <button
                 type="button"
@@ -134,7 +132,7 @@
             </div>
 
             <details class="rail-panel" id="rail-formats" open>
-              <summary class="rail-panel-title">支持的 6 类源地址与示例</summary>
+              <summary class="rail-panel-title">支持的格式与示例</summary>
               <div class="rail-content" id="rail-formats-body">
                 <dl class="format-list">
                   <div class="format-item">
@@ -185,11 +183,6 @@
             <details class="rail-panel" id="rail-matrix" open>
               <summary class="rail-panel-title">服务支持矩阵</summary>
               <div class="rail-content" id="rail-matrix-body">
-                <p class="matrix-hint">
-                  <span id="matrix-count"></span>
-                  jsDelivr 的三个备用入口与 cdn.jsdelivr.net 能力相同，不单独列出。
-                  ✓ 支持，— 不支持。
-                </p>
                 <div id="matrix"></div>
               </div>
             </details>

@@ -531,7 +531,14 @@ details[open] > summary::before {
   margin: 3px 0 0;
 }
 
-.format-item code,
+/* 主链接与说明文字都从同一左边界起排，不加内边距，否则每行的起点会差几像素。 */
+.format-item code {
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  word-break: break-all;
+}
+
 .format-note code {
   padding: 1px 5px;
   border-radius: 5px;
@@ -550,12 +557,6 @@ details[open] > summary::before {
   margin: 12px 0 0;
   padding-top: 10px;
   border-top: 1px solid var(--border);
-}
-
-.matrix-hint {
-  margin: 0 0 10px;
-  color: var(--muted);
-  font-size: 11.5px;
 }
 
 .result {
@@ -954,17 +955,11 @@ details[open] > summary::before {
   font-size: 12px;
 }
 
-.matrix caption {
-  padding: 10px 12px 0;
-  color: var(--muted);
-  font-size: 11.5px;
-  text-align: left;
-}
-
 .matrix th,
 .matrix td {
   padding: 7px 4px;
   border-top: 1px solid var(--border);
+  text-align: center;
 }
 
 .matrix thead th {
@@ -972,17 +967,14 @@ details[open] > summary::before {
   font-size: 10px;
   font-weight: 600;
   line-height: 1.4;
-  text-align: center;
   vertical-align: bottom;
+  /* 优先在空格处换行，避免「gist 直链」被拆成「gist 直 / 链」。 */
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 .matrix thead th:first-child {
   width: 38%;
-}
-
-.matrix thead th:first-child,
-.matrix tbody th {
-  text-align: left;
 }
 
 .matrix tbody th {

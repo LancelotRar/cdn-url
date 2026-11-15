@@ -30,14 +30,11 @@ const rejectionsCountElement = document.querySelector<HTMLElement>("#rejections-
 const toastElement = document.querySelector<HTMLElement>("#toast");
 const groupsElement = document.querySelector<HTMLElement>("#groups");
 const matrixElement = document.querySelector<HTMLElement>("#matrix");
-const matrixCountElement = document.querySelector<HTMLElement>("#matrix-count");
 const inputCountElement = document.querySelector<HTMLElement>("#input-count");
 const emptyStateElement = document.querySelector<HTMLElement>("#empty-state");
 const clearButton = document.querySelector<HTMLButtonElement>("#clear-input");
-const fillExampleButton = document.querySelector<HTMLButtonElement>("#fill-example");
 const pasteButton = document.querySelector<HTMLButtonElement>("#paste-input");
 const composerHint = document.querySelector<HTMLElement>("#composer-hint");
-const emptyFillButton = document.querySelector<HTMLButtonElement>("#empty-fill");
 const emptyFormatsButton = document.querySelector<HTMLButtonElement>("#empty-formats");
 const railTabsElement = document.querySelector<HTMLElement>(".rail-tabs");
 const railGliderElement = document.querySelector<HTMLElement>(".rail-glider");
@@ -53,14 +50,11 @@ if (
   !toastElement ||
   !groupsElement ||
   !matrixElement ||
-  !matrixCountElement ||
   !inputCountElement ||
   !emptyStateElement ||
   !clearButton ||
-  !fillExampleButton ||
   !pasteButton ||
   !composerHint ||
-  !emptyFillButton ||
   !emptyFormatsButton ||
   !railTabsElement ||
   !railGliderElement ||
@@ -80,14 +74,11 @@ const rejectionsCount = rejectionsCountElement;
 const toast = toastElement;
 const groupsContainer = groupsElement;
 const matrixContainer = matrixElement;
-const matrixCount = matrixCountElement;
 const inputCount = inputCountElement;
 const emptyState = emptyStateElement;
 const clearInputButton = clearButton;
-const fillExample = fillExampleButton;
 const pasteInputButton = pasteButton;
 const hintElement = composerHint;
-const emptyFill = emptyFillButton;
 const emptyFormats = emptyFormatsButton;
 const railTabsBar = railTabsElement;
 const railGlider = railGliderElement;
@@ -158,13 +149,6 @@ function selectRail(index: number, moveFocus: boolean): void {
     railTabs[index]?.focus();
   }
 }
-
-/** 示例源地址：仓库单文件、gist 直链、release 资产各一条，覆盖三种归一化分支。 */
-const EXAMPLE_SOURCES = [
-  "https://github.com/LancelotRar/best-cf-ips/blob/main/best-cf-ip-scanned-top20.txt",
-  "https://gist.githubusercontent.com/mn9ri4jdm5/fd2e299390c88720b4cb026b2795126a/raw/53489_qctld.md",
-  "https://github.com/MetaCubeX/mihomo/releases/download/v1.19.34/mihomo-linux-amd64-v3-v1.19.34.gz",
-].join("\n");
 
 const DEFAULT_HINT = "一行一条";
 
@@ -280,14 +264,12 @@ clearInputButton.addEventListener("click", () => {
   inputElement.focus();
 });
 
-fillExample.addEventListener("click", () => setInputText(EXAMPLE_SOURCES));
-emptyFill.addEventListener("click", () => setInputText(EXAMPLE_SOURCES));
 pasteInputButton.addEventListener("click", () => {
   void pasteFromClipboard();
 });
 
 /**
- * 空状态里的「支持的 6 类地址」：宽屏切到「支持的地址」面板，
+ * 空状态里的「查看支持的格式」：宽屏切到「支持的格式」面板，
  * 窄屏直接展开第一块，然后把参考区滚进视野。
  */
 emptyFormats.addEventListener("click", () => {
@@ -342,7 +324,6 @@ function render(result: ConversionResult): void {
   // 刚插入的节点还没有布局，等一帧再量滑块位置。
   requestAnimationFrame(positionTabGliders);
 
-  matrixCount.textContent = `${result.catalog.services.length} 个主服务 × ${result.catalog.sourceTypes.length} 类源类型。`;
   matrixContainer.replaceChildren(renderMatrix(result.catalog));
 }
 
