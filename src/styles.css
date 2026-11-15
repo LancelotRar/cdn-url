@@ -703,6 +703,11 @@ details[open] > summary::before {
   gap: 10px;
 }
 
+.group-tools .action-copy {
+  /* 固定最小宽度：复制成功的短文案不会把这一排挤得跳动。 */
+  min-width: 84px;
+}
+
 .group-count {
   color: var(--muted);
   font-size: 12px;

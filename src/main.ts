@@ -168,6 +168,12 @@ const EXAMPLE_SOURCES = [
 
 const DEFAULT_HINT = "一行一条";
 
+/**
+ * 组级复制按钮的固定文案。
+ * 不拼主机短名：主机名长短不一，会让同一排按钮宽度参差；当前主机由选项卡表达。
+ */
+const GROUP_COPY_LABEL = "复制整组";
+
 /** 已出现过的服务分组：用于只给新出现的分组播一次入场动画。 */
 let shownGroupIds = new Set<string>();
 
@@ -460,7 +466,7 @@ function renderGroup(group: ServiceGroup, enterDelayMs: number | null): HTMLElem
   let tabs: HTMLButtonElement[] = [];
 
   const currentVariant = (): ServiceVariant => group.variants[selectedIndex];
-  const idleCopyLabel = (): string => groupCopyLabel(currentVariant());
+  const idleCopyLabel = (): string => GROUP_COPY_LABEL;
 
   // 原地同步：只重画这一组的行、计数、复制按钮与选项卡状态，焦点留在被按的 tab 上。
   function sync(): void {
@@ -611,11 +617,6 @@ function hostName(endpoint: string): string {
 /** 主机短名取首段（cdn / fastly / gcore / testingcf），窄屏也放得下。 */
 function hostShortName(endpoint: string): string {
   return hostName(endpoint).split(".")[0];
-}
-
-/** 组级复制按钮文案始终带当前主机短名，单入口时也能确认复制的是哪个主机。 */
-function groupCopyLabel(variant: ServiceVariant): string {
-  return `复制整组 · ${hostShortName(variant.endpoint)}`;
 }
 
 function renderRow(row: ResultRow): HTMLElement {
