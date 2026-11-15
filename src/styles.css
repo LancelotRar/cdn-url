@@ -85,8 +85,20 @@ body {
   outline-offset: 1px;
 }
 
-.format-help {
+.help-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
   margin-top: 10px;
+}
+
+.help-row > details {
+  min-width: 0;
+}
+
+.format-help {
+  margin-top: 0;
   font-size: 13px;
   color: var(--muted);
 }
@@ -135,21 +147,18 @@ body {
   margin: 10px 0 0;
 }
 
-.toggle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 10px;
+.matrix-details {
   font-size: 13px;
   color: var(--muted);
+}
+
+.matrix-details summary {
+  color: var(--accent);
   cursor: pointer;
 }
 
-.toggle-input {
-  width: 16px;
-  height: 16px;
-  margin: 0;
-  accent-color: var(--accent);
+.matrix-details .matrix-hint {
+  margin-top: 10px;
 }
 
 .result {
@@ -402,6 +411,12 @@ body {
   filter: brightness(1.08);
 }
 
+@media (max-width: 820px) {
+  .help-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 @media (max-width: 560px) {
   .row {
     grid-template-columns: 1fr;
@@ -416,15 +431,6 @@ body {
     width: 100%;
     justify-content: space-between;
   }
-}
-
-.matrix-section {
-  margin-top: 40px;
-}
-
-.matrix-title {
-  margin: 0 0 4px;
-  font-size: 18px;
 }
 
 .matrix-hint {

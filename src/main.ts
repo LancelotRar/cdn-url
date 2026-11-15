@@ -6,7 +6,6 @@ import { convert } from "./convert";
 import type {
   ConversionResult,
   ConversionSummary,
-  ConvertOptions,
   ErrorType,
   Rejection,
   ResultRow,
@@ -24,7 +23,6 @@ const ERROR_TEXT: Record<ErrorType, string> = {
 };
 
 const input = document.querySelector<HTMLTextAreaElement>("#source-input");
-const fallbackToggle = document.querySelector<HTMLInputElement>("#jsdelivr-fallbacks");
 const summaryElement = document.querySelector<HTMLElement>("#summary");
 const rejectionsSection = document.querySelector<HTMLElement>("#rejections-section");
 const rejectionsElement = document.querySelector<HTMLElement>("#rejections");
@@ -34,7 +32,6 @@ const matrixCountElement = document.querySelector<HTMLElement>("#matrix-count");
 
 if (
   !input ||
-  !fallbackToggle ||
   !summaryElement ||
   !rejectionsSection ||
   !rejectionsElement ||
@@ -43,12 +40,11 @@ if (
   !matrixCountElement
 ) {
   throw new Error(
-    "页面缺少输入框、备用入口开关、摘要、无法处理区、分组容器、支持矩阵容器或矩阵数量提示",
+    "页面缺少输入框、摘要、无法处理区、分组容器、支持矩阵容器或矩阵数量提示",
   );
 }
 
 const inputElement = input;
-const toggle = fallbackToggle;
 const summary = summaryElement;
 const rejectionsSectionElement = rejectionsSection;
 const rejectionsContainer = rejectionsElement;
@@ -56,17 +52,15 @@ const groupsContainer = groupsElement;
 const matrixContainer = matrixElement;
 const matrixCount = matrixCountElement;
 
-/** 已选主机：按服务分组保存在页面内存，输入变化与开关切换不重置，整页刷新才回主入口。 */
+/** 已选主机：按服务分组保存在页面内存，输入变化不重置，整页刷新才回主入口。 */
 const selectedVariantByGroup = new Map<string, string>();
 
-/** 开关状态是唯一变化来源；切换后立即用当前输入重算，不需要重新粘贴。 */
+/** 输入变化是唯一重算来源；结果按服务重新分组，备用入口始终在组内。 */
 function refresh(): void {
-  const options: ConvertOptions = { jsdelivrFallbacks: toggle.checked };
-  render(convert(inputElement.value, options));
+  render(convert(inputElement.value));
 }
 
 input.addEventListener("input", refresh);
-toggle.addEventListener("change", refresh);
 
 refresh();
 
@@ -197,7 +191,7 @@ function renderGroup(group: ServiceGroup): HTMLElement {
   function select(index: number, moveFocus: boolean): void {
     if (index !== selectedIndex) {
       selectedIndex = index;
-      // 记住入口本身而非下标，输入变化或开关重开后仍能指回同一主机。
+      // 记住入口本身而非下标，输入变化后重渲染仍能指回同一主机。
       selectedVariantByGroup.set(group.serviceId, group.variants[index].serviceId);
       sync();
     }
@@ -290,7 +284,7 @@ function handleTabKeydown(
   select(next, true);
 }
 
-/** 存的是入口 serviceId 而不是下标；入口消失（如开关关闭）时暂用主入口且不抹掉记忆。 */
+/** 存的是入口 serviceId 而不是下标；入口暂时消失时暂用主入口且不抹掉记忆。 */
 function selectedVariantIndex(group: ServiceGroup): number {
   const preferred = selectedVariantByGroup.get(group.serviceId);
   const index = group.variants.findIndex((variant) => variant.serviceId === preferred);

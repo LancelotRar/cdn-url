@@ -69,7 +69,7 @@ export const SERVICES: readonly Service[] = [
     stripScheme: true,
     capabilities: ["repo-file", "release-asset", "archive"],
   },
-  // jsDelivr 官方备用入口：同一套路径重排语法，只有主机名不同；由开关统一增删。
+  // jsDelivr 官方备用入口：同一套路径重排语法，只有主机名不同；始终作为所属分组的变体。
   // `fallbackOf` 指向所属的主服务分组，因此它们不单独成组，只作为该组的变体。
   {
     id: "jsdelivr-fastly",

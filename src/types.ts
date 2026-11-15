@@ -70,14 +70,8 @@ export interface Service {
   /** 前缀拼接时是否去掉直链的协议前缀。 */
   stripScheme: boolean;
   capabilities: readonly SourceType[];
-  /** 备用入口归属的主服务 id；有该字段即视为备用入口（默认不显示、不单独成组）。 */
+  /** 备用入口归属的主服务 id；有该字段即视为备用入口（不单独成组）。 */
   fallbackOf?: string;
-}
-
-/** `convert` 的可选开关，全部默认关闭。 */
-export interface ConvertOptions {
-  /** 是否让 jsDelivr 家族额外产出 fastly、gcore、testingcf 三个官方备用入口。 */
-  jsdelivrFallbacks?: boolean;
 }
 
 /** 一条源地址在某个加速服务下的那一行。 */
@@ -122,7 +116,7 @@ export interface ServiceDescriptor {
 
 /**
  * 服务分组：以加速服务为主轴的一块，组内所有加速地址属于同一地址语法。
- * 主入口排在 `variants` 第一位，备用入口开关关闭时只剩主入口。
+ * 主入口排在 `variants` 第一位，其后始终是备用入口。
  */
 export interface ServiceGroup extends ServiceDescriptor {
   variants: ServiceVariant[];

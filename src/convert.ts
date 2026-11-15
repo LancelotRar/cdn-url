@@ -4,7 +4,6 @@ import type {
   CatalogEntry,
   ConversionResult,
   ConversionSummary,
-  ConvertOptions,
   NormalizedTarget,
   Rejection,
   ResultRow,
@@ -36,11 +35,10 @@ interface AcceptedSource {
  * 唯一接缝：把输入框的原始文本转成按加速服务分组的渲染数据。
  * 界面层只渲染这里返回的结果，不含任何判断逻辑。
  * 分组顺序沿用注册表顺序，只输出至少有一行的分组；组内行序等于输入顺序。
- * 备用入口不单独成组，而是投影为其主服务的 `variants`；开关关闭时只剩主入口。
+ * 备用入口不单独成组，而是始终投影为其主服务的 `variants`，由界面选项卡切换。
  * 等价判定按归一化标识：同标识的源都保留，后出现的行指向首次出现的输入行号（1 起算）。
  */
-export function convert(text: string, options: ConvertOptions = {}): ConversionResult {
-  const includeFallbacks = options.jsdelivrFallbacks === true;
+export function convert(text: string): ConversionResult {
   const accepted: AcceptedSource[] = [];
   const rejections: Rejection[] = [];
   const firstLineByIdentity = new Map<string, number>();
@@ -77,7 +75,7 @@ export function convert(text: string, options: ConvertOptions = {}): ConversionR
     });
   }
 
-  const groups = buildGroups(accepted, includeFallbacks);
+  const groups = buildGroups(accepted);
   const summary: ConversionSummary = {
     sourceCount: lineNumber,
     groupCount: groups.length,
@@ -108,10 +106,7 @@ function buildCatalog(): ServiceCatalog {
  * 按注册表顺序构造分组；主服务无行时整组不输出，备用入口不增加分组。
  * 分组存续只看主入口行：备用入口有行而主入口没有，也不会凭空撑起一组。
  */
-function buildGroups(
-  accepted: readonly AcceptedSource[],
-  includeFallbacks: boolean,
-): ServiceGroup[] {
+function buildGroups(accepted: readonly AcceptedSource[]): ServiceGroup[] {
   const groups: ServiceGroup[] = [];
 
   for (const service of SERVICES) {
@@ -128,7 +123,7 @@ function buildGroups(
       serviceId: service.id,
       serviceName: service.name,
       capabilities: service.capabilities,
-      variants: buildVariants(service, accepted, includeFallbacks, mainRows),
+      variants: buildVariants(service, accepted, mainRows),
     });
   }
 
@@ -136,19 +131,15 @@ function buildGroups(
 }
 
 /**
- * 主入口排第一位；备用入口只有在开关打开时才追加，并保持注册表顺序。
+ * 主入口排第一位，其后始终追加备用入口，并保持注册表顺序。
  * 主入口的行由调用方算好并复用，避免重复过滤。
  */
 function buildVariants(
   main: Service,
   accepted: readonly AcceptedSource[],
-  includeFallbacks: boolean,
   mainRows: readonly ResultRow[],
 ): ServiceVariant[] {
   const variants: ServiceVariant[] = [variantOf(main, mainRows, false)];
-  if (!includeFallbacks) {
-    return variants;
-  }
 
   for (const service of SERVICES) {
     if (service.fallbackOf !== main.id) {
