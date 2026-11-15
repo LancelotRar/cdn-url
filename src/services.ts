@@ -2,7 +2,7 @@ import type { NormalizedTarget, Service } from "./types";
 
 /**
  * 加速服务注册表。扁平数据：一个服务一条记录，新增服务不改逻辑。
- * 工单 02 加入两条路径重排式服务，与 gh-proxy.com 共用同一个构造入口。
+ * 能力集合来自 spec 的实测矩阵；github.chenc.dev 不支持 gist 直链。
  */
 export const SERVICES: readonly Service[] = [
   {
@@ -29,6 +29,46 @@ export const SERVICES: readonly Service[] = [
     stripScheme: false,
     capabilities: ["repo-file"],
   },
+  {
+    id: "ghproxy-net",
+    name: "ghproxy.net",
+    endpoint: "https://ghproxy.net",
+    syntax: "prefix",
+    stripScheme: false,
+    capabilities: ["repo-file", "gist", "release-asset", "archive"],
+  },
+  {
+    id: "ghfast",
+    name: "ghfast.top",
+    endpoint: "https://ghfast.top",
+    syntax: "prefix",
+    stripScheme: false,
+    capabilities: ["repo-file", "gist", "release-asset", "archive"],
+  },
+  {
+    id: "ghproxy-icu",
+    name: "ghproxy.icu",
+    endpoint: "https://ghproxy.icu",
+    syntax: "prefix",
+    stripScheme: false,
+    capabilities: ["repo-file", "gist", "release-asset", "archive"],
+  },
+  {
+    id: "fastgit",
+    name: "fastgit.cc",
+    endpoint: "https://fastgit.cc",
+    syntax: "prefix",
+    stripScheme: false,
+    capabilities: ["repo-file", "gist", "release-asset", "archive"],
+  },
+  {
+    id: "chenc",
+    name: "github.chenc.dev",
+    endpoint: "https://github.chenc.dev",
+    syntax: "prefix",
+    stripScheme: true,
+    capabilities: ["repo-file", "release-asset", "archive"],
+  },
 ];
 
 /** 按地址语法把归一化目标构造成加速地址。 */
@@ -40,5 +80,9 @@ export function buildAcceleratedUrl(service: Service, target: NormalizedTarget):
     return `${service.endpoint}/${body}`;
   }
 
-  return `${service.endpoint}/gh/${target.owner}/${target.repo}@${target.ref}/${target.path}`;
+  if (target.kind !== "repo-file") {
+    throw new Error(`${service.name} 只支持仓库单文件，能力过滤应拦住其他源类型`);
+  }
+
+  return `${service.endpoint}/gh/${target.owner}/${target.repo}@${target.ref}/${target.path}${target.query}`;
 }
