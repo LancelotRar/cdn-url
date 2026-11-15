@@ -13,6 +13,20 @@ export type ErrorType =
 /** 地址语法：加速服务构造加速地址的方式。 */
 export type UrlSyntax = "rearrange" | "prefix";
 
+/** 仓库单文件的归一化目标：四元组与由它重建的直链。 */
+export interface RepoFileTarget {
+  kind: "repo-file";
+  owner: string;
+  repo: string;
+  ref: string;
+  path: string;
+  /** 归一化后重建的 raw.githubusercontent.com 直链。 */
+  directUrl: string;
+}
+
+/** 归一化目标：两种地址语法共用的入参。 */
+export type NormalizedTarget = RepoFileTarget;
+
 /** 服务注册表里的一条记录。新增服务只加数据。 */
 export interface Service {
   id: string;
