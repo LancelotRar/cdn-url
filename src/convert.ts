@@ -1,12 +1,17 @@
-import { identityOf, normalize } from "./normalize";
+import { identityOf, labelOf, normalize } from "./normalize";
 import { SERVICES, buildAcceleratedUrl } from "./services";
 import type {
-  Card,
   CatalogEntry,
   ConversionResult,
+  ConversionSummary,
   ConvertOptions,
+  NormalizedTarget,
+  Rejection,
+  ResultRow,
   Service,
   ServiceCatalog,
+  ServiceGroup,
+  ServiceVariant,
   SourceType,
 } from "./types";
 
@@ -18,16 +23,30 @@ const SOURCE_TYPES: readonly SourceType[] = [
   "archive",
 ];
 
+/** 一条被接受的源地址：分组构造的中间形态，聚合了行所需的全部来源信息。 */
+interface AcceptedSource {
+  line: number;
+  source: string;
+  target: NormalizedTarget;
+  equivalentTo: number | null;
+  note: string | null;
+}
+
 /**
- * 唯一接缝：把输入框的原始文本转成渲染所需的全部内容。
+ * 唯一接缝：把输入框的原始文本转成按加速服务分组的渲染数据。
  * 界面层只渲染这里返回的结果，不含任何判断逻辑。
- * 开关项默认关闭：备用入口只有在被显式打开时才参与生成。
- * 等价判定按归一化标识：同标识的卡片都保留，后出现的卡片指向第一次出现的卡片序号（1 起算）。
+ * 分组顺序沿用注册表顺序，只输出至少有一行的分组；组内行序等于输入顺序。
+ * 备用入口不单独成组，而是投影为其主服务的 `variants`；开关关闭时只剩主入口。
+ * 等价判定按归一化标识：同标识的源都保留，后出现的行指向首次出现的输入行号（1 起算）。
  */
 export function convert(text: string, options: ConvertOptions = {}): ConversionResult {
   const includeFallbacks = options.jsdelivrFallbacks === true;
-  const cards: Card[] = [];
-  const firstCardByIdentity = new Map<string, number>();
+  const accepted: AcceptedSource[] = [];
+  const rejections: Rejection[] = [];
+  const firstLineByIdentity = new Map<string, number>();
+
+  // 行号按非空输入行计：空行与纯空白行既不占号，也不进摘要。
+  let lineNumber = 0;
 
   for (const rawLine of text.split(/\r?\n/)) {
     const source = rawLine.trim();
@@ -35,65 +54,137 @@ export function convert(text: string, options: ConvertOptions = {}): ConversionR
       continue;
     }
 
+    lineNumber += 1;
     const normalized = normalize(source);
     if (normalized.kind === "error") {
-      cards.push({
-        source,
-        sourceType: null,
-        error: normalized.error,
-        equivalentTo: null,
-        note: null,
-        lines: [],
-      });
+      // 被拒绝的源不参与分组与等价判定，只保留行号与原因。
+      rejections.push({ line: lineNumber, source, error: normalized.error });
       continue;
     }
 
-    const cardNumber = cards.length + 1;
     const identity = identityOf(normalized);
-    const firstCardNumber = firstCardByIdentity.get(identity);
-    if (firstCardNumber === undefined) {
-      firstCardByIdentity.set(identity, cardNumber);
+    const firstLine = firstLineByIdentity.get(identity);
+    if (firstLine === undefined) {
+      firstLineByIdentity.set(identity, lineNumber);
     }
 
-    cards.push({
+    accepted.push({
+      line: lineNumber,
       source,
-      sourceType: normalized.kind,
-      error: null,
-      equivalentTo: firstCardNumber ?? null,
+      target: normalized,
+      equivalentTo: firstLine ?? null,
       note: normalized.kind === "gist" ? "仅适用于单文件 gist" : null,
-      lines: SERVICES.filter(
-        (service) =>
-          service.capabilities.includes(normalized.kind) &&
-          (includeFallbacks || service.fallback !== true),
-      ).map((service) => ({
-        ...projectService(service),
-        url: buildAcceleratedUrl(service, normalized),
-      })),
     });
   }
 
-  return { cards, catalog: buildCatalog() };
-}
-
-/**
- * 注册表记录到界面数据的共享投影：结果行与目录条目都从这里取值，
- * 同一次映射只写一遍，避免两处字段各说各话。
- */
-function projectService(service: Service): CatalogEntry {
-  return {
-    serviceId: service.id,
-    serviceName: service.name,
-    capabilities: service.capabilities,
+  const groups = buildGroups(accepted, includeFallbacks);
+  const summary: ConversionSummary = {
+    sourceCount: lineNumber,
+    groupCount: groups.length,
+    rejectionCount: rejections.length,
   };
+
+  return { summary, rejections, groups, catalog: buildCatalog() };
 }
 
 /**
- * 服务目录与生成地址共用同一份注册表，只过滤掉备用入口：
- * 矩阵只列主服务，所以某条源少了几家时能查到是能力不支持。
+ * 服务目录与组头标签共用同一份注册表，只过滤掉备用入口：
+ * 矩阵按主服务列出，所以某条源少了几家时能查到是能力不支持。
  */
 function buildCatalog(): ServiceCatalog {
   return {
     sourceTypes: SOURCE_TYPES,
-    services: SERVICES.filter((service) => service.fallback !== true).map(projectService),
+    services: SERVICES.filter((service) => service.fallbackOf === undefined).map(
+      (service): CatalogEntry => ({
+        serviceId: service.id,
+        serviceName: service.name,
+        capabilities: service.capabilities,
+      }),
+    ),
   };
+}
+
+/**
+ * 按注册表顺序构造分组；主服务无行时整组不输出，备用入口不增加分组。
+ * 分组存续只看主入口行：备用入口有行而主入口没有，也不会凭空撑起一组。
+ */
+function buildGroups(
+  accepted: readonly AcceptedSource[],
+  includeFallbacks: boolean,
+): ServiceGroup[] {
+  const groups: ServiceGroup[] = [];
+
+  for (const service of SERVICES) {
+    if (service.fallbackOf !== undefined) {
+      continue;
+    }
+
+    const mainRows = buildRows(service, accepted);
+    if (mainRows.length === 0) {
+      continue;
+    }
+
+    groups.push({
+      serviceId: service.id,
+      serviceName: service.name,
+      capabilities: service.capabilities,
+      variants: buildVariants(service, accepted, includeFallbacks, mainRows),
+    });
+  }
+
+  return groups;
+}
+
+/**
+ * 主入口排第一位；备用入口只有在开关打开时才追加，并保持注册表顺序。
+ * 主入口的行由调用方算好并复用，避免重复过滤。
+ */
+function buildVariants(
+  main: Service,
+  accepted: readonly AcceptedSource[],
+  includeFallbacks: boolean,
+  mainRows: readonly ResultRow[],
+): ServiceVariant[] {
+  const variants: ServiceVariant[] = [variantOf(main, mainRows, false)];
+  if (!includeFallbacks) {
+    return variants;
+  }
+
+  for (const service of SERVICES) {
+    if (service.fallbackOf !== main.id) {
+      continue;
+    }
+
+    variants.push(variantOf(service, buildRows(service, accepted), true));
+  }
+
+  return variants;
+}
+
+function variantOf(
+  service: Service,
+  rows: readonly ResultRow[],
+  isFallback: boolean,
+): ServiceVariant {
+  return {
+    serviceId: service.id,
+    serviceName: service.name,
+    endpoint: service.endpoint,
+    isFallback,
+    rows: [...rows],
+  };
+}
+
+/** 组内行序等于输入顺序；能力不支持的源不出现，因此组内地址必然是同一语法。 */
+function buildRows(service: Service, accepted: readonly AcceptedSource[]): ResultRow[] {
+  return accepted
+    .filter((entry) => service.capabilities.includes(entry.target.kind))
+    .map((entry) => ({
+      line: entry.line,
+      source: entry.source,
+      label: labelOf(entry.target),
+      url: buildAcceleratedUrl(service, entry.target),
+      note: entry.note,
+      equivalentTo: entry.equivalentTo,
+    }));
 }

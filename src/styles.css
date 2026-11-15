@@ -152,85 +152,178 @@ body {
   accent-color: var(--accent);
 }
 
-.cards {
+.result {
   display: flex;
   flex-direction: column;
   gap: 16px;
   margin-top: 24px;
 }
 
-.toolbar {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
+.summary {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
 }
 
-.card {
+.section-title {
+  margin: 0;
+  font-size: 16px;
+}
+
+.rejections {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rejection {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "line source"
+    "line error";
+  gap: 2px 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.rejection-line {
+  grid-area: line;
+  align-self: start;
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.rejection-source {
+  grid-area: source;
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.rejection-error {
+  grid-area: error;
+  color: var(--danger);
+  font-size: 13px;
+}
+
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.group {
   padding: 16px;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--surface);
 }
 
-.card-head {
+.group-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px 12px;
   margin-bottom: 12px;
 }
 
-.card-head .action {
-  flex: none;
-}
-
-.card-source {
-  margin: 0 0 12px;
-  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
-  font-size: 13px;
-  color: var(--muted);
-  word-break: break-all;
-}
-
-.card-head .card-source {
-  margin: 0;
+.group-identity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
   min-width: 0;
 }
 
-.card-error {
+.group-title {
   margin: 0;
-  color: var(--danger);
-  font-size: 14px;
+  font-size: 15px;
 }
 
-.card-note {
-  margin: 0 0 12px;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.card-equivalent {
-  margin: 0 0 12px;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.lines {
-  margin: 0;
-  padding: 0;
-  list-style: none;
+.group-caps {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.group-tools {
+  display: flex;
+  flex: none;
+  align-items: center;
   gap: 10px;
 }
 
-.line {
+.group-count {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* 主机选项卡在服务名下方换行，窄屏不横向滚动。 */
+.group-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: -4px 0 12px;
+}
+
+.host-tab {
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.host-tab:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+/* 选中态同时靠底色、边框与字重表达，不只依赖颜色。 */
+.host-tab[aria-selected="true"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+.host-tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   grid-template-areas:
-    "service actions"
-    "caps actions"
-    "url actions";
+    "label actions"
+    "url actions"
+    "meta actions";
   gap: 4px 12px;
   align-items: center;
   padding: 10px 12px;
@@ -239,21 +332,35 @@ body {
   background: var(--code-bg);
 }
 
-.line-service {
-  grid-area: service;
+.row-label {
+  grid-area: label;
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
   font-size: 12px;
-  font-weight: 600;
   color: var(--muted);
+  word-break: break-all;
 }
 
-.line-caps {
-  grid-area: caps;
+.row-url {
+  grid-area: url;
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 13px;
+  word-break: break-all;
+  user-select: all;
+}
+
+.row-meta {
+  grid-area: meta;
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 6px;
-  font-size: 11px;
-  line-height: 1.5;
+  gap: 4px 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.row-actions {
+  grid-area: actions;
+  display: flex;
+  gap: 8px;
 }
 
 .cap {
@@ -263,30 +370,6 @@ body {
   background: var(--surface);
   color: var(--muted);
   white-space: nowrap;
-}
-
-.cap-current {
-  border-color: var(--accent);
-  color: var(--accent);
-  font-weight: 600;
-}
-
-.cap-note {
-  color: var(--muted);
-}
-
-.line-url {
-  grid-area: url;
-  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
-  font-size: 13px;
-  word-break: break-all;
-  user-select: all;
-}
-
-.line-actions {
-  grid-area: actions;
-  display: flex;
-  gap: 8px;
 }
 
 .action {
@@ -319,27 +402,19 @@ body {
   filter: brightness(1.08);
 }
 
-.action:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-
-.action:disabled:hover {
-  border-color: var(--border);
-}
-
-.action-copy:disabled:hover {
-  filter: none;
-}
-
 @media (max-width: 560px) {
-  .line {
+  .row {
     grid-template-columns: 1fr;
     grid-template-areas:
-      "service"
-      "caps"
+      "label"
       "url"
+      "meta"
       "actions";
+  }
+
+  .group-tools {
+    width: 100%;
+    justify-content: space-between;
   }
 }
 
