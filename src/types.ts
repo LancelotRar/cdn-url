@@ -53,6 +53,14 @@ export interface Service {
   /** 前缀拼接时是否去掉直链的协议前缀。 */
   stripScheme: boolean;
   capabilities: readonly SourceType[];
+  /** 备用入口：只有对应开关打开时才参与生成，默认不列出。 */
+  fallback?: boolean;
+}
+
+/** `convert` 的可选开关，全部默认关闭。 */
+export interface ConvertOptions {
+  /** 是否让 jsDelivr 家族额外产出 fastly、gcore、testingcf 三个官方备用入口。 */
+  jsdelivrFallbacks?: boolean;
 }
 
 /** 一张卡片里的一行加速地址。 */

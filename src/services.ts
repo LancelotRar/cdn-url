@@ -69,6 +69,34 @@ export const SERVICES: readonly Service[] = [
     stripScheme: true,
     capabilities: ["repo-file", "release-asset", "archive"],
   },
+  // jsDelivr 官方备用入口：同一套路径重排语法，只有主机名不同；由开关统一增删。
+  {
+    id: "jsdelivr-fastly",
+    name: "fastly.jsdelivr.net",
+    endpoint: "https://fastly.jsdelivr.net",
+    syntax: "rearrange",
+    stripScheme: false,
+    capabilities: ["repo-file"],
+    fallback: true,
+  },
+  {
+    id: "jsdelivr-gcore",
+    name: "gcore.jsdelivr.net",
+    endpoint: "https://gcore.jsdelivr.net",
+    syntax: "rearrange",
+    stripScheme: false,
+    capabilities: ["repo-file"],
+    fallback: true,
+  },
+  {
+    id: "jsdelivr-testingcf",
+    name: "testingcf.jsdelivr.net",
+    endpoint: "https://testingcf.jsdelivr.net",
+    syntax: "rearrange",
+    stripScheme: false,
+    capabilities: ["repo-file"],
+    fallback: true,
+  },
 ];
 
 /** 按地址语法把归一化目标构造成加速地址。 */
