@@ -1,6 +1,14 @@
 import { normalize } from "./normalize";
 import { SERVICES, buildAcceleratedUrl } from "./services";
-import type { Card, ConversionResult, ConvertOptions } from "./types";
+import type { Card, ConversionResult, ConvertOptions, ServiceCatalog, SourceType } from "./types";
+
+/** 四类源类型，按 spec 支持矩阵的列顺序。 */
+const SOURCE_TYPES: readonly SourceType[] = [
+  "repo-file",
+  "gist",
+  "release-asset",
+  "archive",
+];
 
 /**
  * 唯一接缝：把输入框的原始文本转成渲染所需的全部内容。
@@ -49,5 +57,20 @@ export function convert(text: string, options: ConvertOptions = {}): ConversionR
     });
   }
 
-  return { cards };
+  return { cards, catalog: buildCatalog() };
+}
+
+/**
+ * 服务目录与生成地址共用同一份注册表，只过滤掉备用入口：
+ * 矩阵列的是 8 个主服务，所以某条源少了几家时能查到是能力不支持。
+ */
+function buildCatalog(): ServiceCatalog {
+  return {
+    sourceTypes: SOURCE_TYPES,
+    services: SERVICES.filter((service) => service.fallback !== true).map((service) => ({
+      serviceId: service.id,
+      serviceName: service.name,
+      capabilities: service.capabilities,
+    })),
+  };
 }
