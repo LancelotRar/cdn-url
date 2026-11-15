@@ -3,7 +3,16 @@ import "./styles.css";
 import { renderCapabilityTags, renderMatrix } from "./capabilities";
 import { copyText } from "./clipboard";
 import { convert } from "./convert";
-import type { Card, ConversionResult, ConvertOptions, ErrorType, ServiceLine } from "./types";
+import type {
+  ConversionResult,
+  ConversionSummary,
+  ConvertOptions,
+  ErrorType,
+  Rejection,
+  ResultRow,
+  ServiceGroup,
+  ServiceVariant,
+} from "./types";
 
 const ERROR_TEXT: Record<ErrorType, string> = {
   "tree-directory": "这是 tree 目录页，不支持。",
@@ -15,34 +24,37 @@ const ERROR_TEXT: Record<ErrorType, string> = {
 };
 
 const input = document.querySelector<HTMLTextAreaElement>("#source-input");
-const cardsElement = document.querySelector<HTMLElement>("#cards");
 const fallbackToggle = document.querySelector<HTMLInputElement>("#jsdelivr-fallbacks");
-const copyAllButton = document.querySelector<HTMLButtonElement>("#copy-all");
+const summaryElement = document.querySelector<HTMLElement>("#summary");
+const rejectionsSection = document.querySelector<HTMLElement>("#rejections-section");
+const rejectionsElement = document.querySelector<HTMLElement>("#rejections");
+const groupsElement = document.querySelector<HTMLElement>("#groups");
 const matrixElement = document.querySelector<HTMLElement>("#matrix");
 const matrixCountElement = document.querySelector<HTMLElement>("#matrix-count");
 
 if (
   !input ||
-  !cardsElement ||
   !fallbackToggle ||
-  !copyAllButton ||
+  !summaryElement ||
+  !rejectionsSection ||
+  !rejectionsElement ||
+  !groupsElement ||
   !matrixElement ||
   !matrixCountElement
 ) {
   throw new Error(
-    "页面缺少输入框、卡片容器、备用入口开关、复制全部按钮、支持矩阵容器或矩阵数量提示",
+    "页面缺少输入框、备用入口开关、摘要、无法处理区、分组容器、支持矩阵容器或矩阵数量提示",
   );
 }
 
-const cardsContainer = cardsElement;
 const inputElement = input;
 const toggle = fallbackToggle;
-const copyAll = copyAllButton;
+const summary = summaryElement;
+const rejectionsSectionElement = rejectionsSection;
+const rejectionsContainer = rejectionsElement;
+const groupsContainer = groupsElement;
 const matrixContainer = matrixElement;
 const matrixCount = matrixCountElement;
-
-/** 当前渲染结果；页面级复制按钮只读取它，不重新计算。 */
-let currentResult: ConversionResult | null = null;
 
 /** 开关状态是唯一变化来源；切换后立即用当前输入重算，不需要重新粘贴。 */
 function refresh(): void {
@@ -52,119 +64,177 @@ function refresh(): void {
 
 input.addEventListener("input", refresh);
 toggle.addEventListener("change", refresh);
-copyAll.addEventListener("click", () => {
-  const urls = currentResult === null ? [] : allUrls(currentResult);
-  if (urls.length === 0) {
-    return;
-  }
-  void handleCopy(copyAll, urls.join("\n"), "复制全部");
-});
 
 refresh();
 
 function render(result: ConversionResult): void {
-  currentResult = result;
-  cardsContainer.replaceChildren(...result.cards.map(renderCard));
-  copyAll.disabled = allUrls(result).length === 0;
+  renderSummary(result.summary);
+
+  rejectionsSectionElement.hidden = result.rejections.length === 0;
+  rejectionsContainer.replaceChildren(...result.rejections.map(renderRejection));
+
+  groupsContainer.replaceChildren(...result.groups.map(renderGroup));
+
   matrixCount.textContent = `${result.catalog.services.length} 个主服务 × ${result.catalog.sourceTypes.length} 类源类型。`;
   matrixContainer.replaceChildren(renderMatrix(result.catalog));
 }
 
-/** 按卡片顺序、卡片内的界面顺序摊平所有加速地址。 */
-function allUrls(result: ConversionResult): string[] {
-  return result.cards.flatMap((card) => card.lines.map((line) => line.url));
+/** 摘要只读 `summary` 的三个计数；没有非空输入时整块不出现。 */
+function renderSummary(counts: ConversionSummary): void {
+  if (counts.sourceCount === 0) {
+    summary.hidden = true;
+    summary.textContent = "";
+    return;
+  }
+
+  const accepted = `${counts.sourceCount} 条源地址 → ${counts.groupCount} 个服务分组`;
+  summary.textContent =
+    counts.rejectionCount === 0
+      ? accepted
+      : `${accepted}，${counts.rejectionCount} 条无法处理`;
+  summary.hidden = false;
 }
 
-function renderCard(card: Card): HTMLElement {
-  const article = document.createElement("article");
-  article.className = "card";
+function renderRejection(rejection: Rejection): HTMLElement {
+  const item = document.createElement("li");
+  item.className = "rejection";
+
+  const line = document.createElement("span");
+  line.className = "rejection-line";
+  line.textContent = `第 ${rejection.line} 行`;
+
+  const source = document.createElement("span");
+  source.className = "rejection-source";
+  source.textContent = rejection.source;
+
+  const error = document.createElement("span");
+  error.className = "rejection-error";
+  error.textContent = ERROR_TEXT[rejection.error];
+
+  item.append(line, source, error);
+  return item;
+}
+
+function renderGroup(group: ServiceGroup): HTMLElement {
+  const section = document.createElement("section");
+  section.className = "group";
+
+  const titleId = `group-${group.serviceId}-title`;
+  section.setAttribute("aria-labelledby", titleId);
+
+  // 这一单只渲染主入口；03 会在组头与行列表之间插入主机选项卡，
+  // 并把组级复制按钮的文案换成当前主机短名。
+  const variant = group.variants[0];
+  const copyLabel = groupCopyLabel(variant, group.variants.length);
+  const urls = variant.rows.map((row) => row.url);
 
   const head = document.createElement("div");
-  head.className = "card-head";
+  head.className = "group-head";
 
-  const source = document.createElement("p");
-  source.className = "card-source";
-  source.textContent = card.source;
-  head.append(source);
+  const identity = document.createElement("div");
+  identity.className = "group-identity";
 
-  const urls = card.lines.map((line) => line.url);
-  if (urls.length > 0) {
-    const copyGroup = document.createElement("button");
-    copyGroup.type = "button";
-    copyGroup.className = "action action-copy";
-    copyGroup.textContent = "复制本组";
-    copyGroup.addEventListener("click", () => {
-      void handleCopy(copyGroup, urls.join("\n"), "复制本组");
-    });
-    head.append(copyGroup);
-  }
+  const title = document.createElement("h2");
+  title.className = "group-title";
+  title.id = titleId;
+  title.textContent = group.serviceName;
 
-  article.append(head);
+  identity.append(title, renderCapabilityTags(group.capabilities));
 
-  if (card.error !== null) {
-    const error = document.createElement("p");
-    error.className = "card-error";
-    error.textContent = ERROR_TEXT[card.error];
-    article.append(error);
-    return article;
-  }
+  const tools = document.createElement("div");
+  tools.className = "group-tools";
 
-  if (card.equivalentTo !== null) {
-    const equivalent = document.createElement("p");
-    equivalent.className = "card-equivalent";
-    equivalent.textContent = `与第 ${card.equivalentTo} 条等价`;
-    article.append(equivalent);
-  }
+  const count = document.createElement("span");
+  count.className = "group-count";
+  count.textContent = `${variant.rows.length} 行`;
 
-  if (card.note !== null) {
-    const note = document.createElement("p");
-    note.className = "card-note";
-    note.textContent = card.note;
-    article.append(note);
-  }
+  const copyGroup = document.createElement("button");
+  copyGroup.type = "button";
+  copyGroup.className = "action action-copy";
+  copyGroup.textContent = copyLabel;
+  copyGroup.addEventListener("click", () => {
+    void handleCopy(copyGroup, urls.join("\n"), copyLabel);
+  });
+
+  tools.append(count, copyGroup);
+  head.append(identity, tools);
+  section.append(head);
 
   const list = document.createElement("ul");
-  list.className = "lines";
-  for (const line of card.lines) {
-    list.append(renderLine(line, card.sourceType));
+  list.className = "rows";
+  for (const row of variant.rows) {
+    list.append(renderRow(row));
   }
-  article.append(list);
+  section.append(list);
 
-  return article;
+  return section;
 }
 
-function renderLine(line: ServiceLine, sourceType: Card["sourceType"]): HTMLElement {
-  const item = document.createElement("li");
-  item.className = "line";
+/** 组级复制按钮文案：多入口时带当前主机短名，避免复制到看不见的那个入口。 */
+function groupCopyLabel(variant: ServiceVariant, variantCount: number): string {
+  if (variantCount <= 1) {
+    return "复制整组";
+  }
 
-  const service = document.createElement("span");
-  service.className = "line-service";
-  service.textContent = line.serviceName;
+  const host = new URL(variant.endpoint).hostname.split(".")[0];
+  return `复制整组 · ${host}`;
+}
+
+function renderRow(row: ResultRow): HTMLElement {
+  const item = document.createElement("li");
+  item.className = "row";
+
+  // 行首只放短标识，完整源地址进悬浮提示；标识可重复，源地址本身仍能区分。
+  const label = document.createElement("span");
+  label.className = "row-label";
+  label.textContent = row.label;
+  label.title = row.source;
 
   const url = document.createElement("span");
-  url.className = "line-url";
-  url.textContent = line.url;
+  url.className = "row-url";
+  url.textContent = row.url;
+
+  const meta = document.createElement("span");
+  meta.className = "row-meta";
+
+  if (row.equivalentTo !== null) {
+    const equivalent = document.createElement("span");
+    equivalent.className = "row-equivalent";
+    equivalent.textContent = `与第 ${row.equivalentTo} 条等价`;
+    meta.append(equivalent);
+  }
+
+  if (row.note !== null) {
+    const note = document.createElement("span");
+    note.className = "row-note";
+    note.textContent = row.note;
+    meta.append(note);
+  }
 
   const actions = document.createElement("span");
-  actions.className = "line-actions";
+  actions.className = "row-actions";
 
   const copyButton = document.createElement("button");
   copyButton.type = "button";
   copyButton.className = "action action-copy";
   copyButton.textContent = "复制";
   copyButton.addEventListener("click", () => {
-    void handleCopy(copyButton, line.url);
+    void handleCopy(copyButton, row.url);
   });
 
   const openLink = document.createElement("a");
   openLink.className = "action action-open";
-  openLink.href = line.url;
+  openLink.href = row.url;
   openLink.target = "_blank";
   openLink.rel = "noopener noreferrer";
   openLink.textContent = "打开";
 
   actions.append(copyButton, openLink);
-  item.append(service, renderCapabilityTags(line, sourceType), url, actions);
+  item.append(label, url);
+  if (meta.childElementCount > 0) {
+    item.append(meta);
+  }
+  item.append(actions);
 
   return item;
 }

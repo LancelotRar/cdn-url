@@ -70,13 +70,16 @@
         <span>显示 jsDelivr 备用入口（fastly / gcore / testingcf）</span>
       </label>
 
-      <div class="toolbar">
-        <button id="copy-all" class="action action-copy" type="button" disabled>
-          复制全部
-        </button>
-      </div>
+      <div id="result" class="result" aria-live="polite">
+        <p id="summary" class="summary" hidden></p>
 
-      <section id="cards" class="cards" aria-live="polite"></section>
+        <section id="rejections-section" aria-labelledby="rejections-title" hidden>
+          <h2 id="rejections-title" class="section-title">无法处理</h2>
+          <ul id="rejections" class="rejections"></ul>
+        </section>
+
+        <section id="groups" class="groups" aria-label="服务分组"></section>
+      </div>
 
       <section class="matrix-section" aria-labelledby="matrix-title">
         <h2 id="matrix-title" class="matrix-title">服务支持矩阵</h2>

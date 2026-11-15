@@ -1,4 +1,4 @@
-import type { ServiceCatalog, ServiceLine, SourceType } from "./types";
+import type { ServiceCatalog, SourceType } from "./types";
 
 /** 四类源类型的界面文案。只影响显示，能力判断全部来自 `convert` 返回的目录。 */
 const SOURCE_TYPE_LABELS: Record<SourceType, string> = {
@@ -9,32 +9,20 @@ const SOURCE_TYPE_LABELS: Record<SourceType, string> = {
 };
 
 /**
- * 一行加速地址的能力标签：先说清「本条源属于哪类」，再说「该服务还支持哪些类」。
- * 只列该服务真正支持的类，因此 github.chenc.dev 的行上不会出现 gist 标签。
+ * 组头的能力标签：组内各行能力相同，逐行重复是噪音，因此只在组头列一次。
+ * 标签集合沿用 `convert` 输出目录的口径，与页面底部支持矩阵同源。
  */
-export function renderCapabilityTags(
-  line: ServiceLine,
-  sourceType: SourceType | null,
-): HTMLElement {
+export function renderCapabilityTags(capabilities: readonly SourceType[]): HTMLElement {
   const container = document.createElement("span");
-  container.className = "line-caps";
+  container.className = "group-caps";
 
-  const current =
-    sourceType !== null && line.capabilities.includes(sourceType) ? sourceType : null;
+  // 标签本身只有类型名，补一段隐藏的引导语让读屏听得出这是「支持」列表。
+  const lead = document.createElement("span");
+  lead.className = "visually-hidden";
+  lead.textContent = "支持：";
+  container.append(lead);
 
-  if (current !== null) {
-    container.append(chip(`本条 · ${SOURCE_TYPE_LABELS[current]}`, "cap cap-current"));
-  }
-
-  const others = line.capabilities.filter((capability) => capability !== current);
-
-  if (others.length === 0) {
-    container.append(note(current === null ? "仅支持一类源" : "仅支持这一类"));
-    return container;
-  }
-
-  container.append(note(current === null ? "支持：" : "也支持："));
-  for (const capability of others) {
+  for (const capability of capabilities) {
     container.append(chip(SOURCE_TYPE_LABELS[capability], "cap"));
   }
 
@@ -44,13 +32,6 @@ export function renderCapabilityTags(
 function chip(text: string, className: string): HTMLElement {
   const element = document.createElement("span");
   element.className = className;
-  element.textContent = text;
-  return element;
-}
-
-function note(text: string): HTMLElement {
-  const element = document.createElement("span");
-  element.className = "cap-note";
   element.textContent = text;
   return element;
 }
