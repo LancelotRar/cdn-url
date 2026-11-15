@@ -36,6 +36,7 @@ const clearButton = document.querySelector<HTMLButtonElement>("#clear-input");
 const pasteButton = document.querySelector<HTMLButtonElement>("#paste-input");
 const composerHint = document.querySelector<HTMLElement>("#composer-hint");
 const emptyFormatsButton = document.querySelector<HTMLButtonElement>("#empty-formats");
+const themeToggleElement = document.querySelector<HTMLButtonElement>("#theme-toggle");
 const railTabsElement = document.querySelector<HTMLElement>(".rail-tabs");
 const railGliderElement = document.querySelector<HTMLElement>(".rail-glider");
 const railTabElements = Array.from(document.querySelectorAll<HTMLButtonElement>(".rail-tab"));
@@ -56,6 +57,7 @@ if (
   !pasteButton ||
   !composerHint ||
   !emptyFormatsButton ||
+  !themeToggleElement ||
   !railTabsElement ||
   !railGliderElement ||
   railTabElements.length !== 2 ||
@@ -80,6 +82,7 @@ const clearInputButton = clearButton;
 const pasteInputButton = pasteButton;
 const hintElement = composerHint;
 const emptyFormats = emptyFormatsButton;
+const themeToggle = themeToggleElement;
 const railTabsBar = railTabsElement;
 const railGlider = railGliderElement;
 const railTabs = railTabElements;
@@ -148,6 +151,29 @@ function selectRail(index: number, moveFocus: boolean): void {
   if (moveFocus) {
     railTabs[index]?.focus();
   }
+}
+
+const THEME_KEY = "cdn-url:theme";
+
+function currentTheme(): "light" | "dark" {
+  return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+}
+
+/** 按钮的按下态与提示文案跟着当前主题走，读屏与视觉保持一致。 */
+function syncThemeToggle(): void {
+  const dark = currentTheme() === "dark";
+  themeToggle.setAttribute("aria-pressed", dark ? "true" : "false");
+  themeToggle.title = dark ? "切换到浅色模式" : "切换到深色模式";
+}
+
+function setTheme(theme: "light" | "dark"): void {
+  document.documentElement.dataset.theme = theme;
+  try {
+    window.localStorage.setItem(THEME_KEY, theme);
+  } catch {
+    // file:// 或隐私模式下写不进去，主题在本次会话内仍然生效。
+  }
+  syncThemeToggle();
 }
 
 const DEFAULT_HINT = "一行一条";
@@ -268,6 +294,10 @@ pasteInputButton.addEventListener("click", () => {
   void pasteFromClipboard();
 });
 
+themeToggle.addEventListener("click", () => {
+  setTheme(currentTheme() === "dark" ? "light" : "dark");
+});
+
 /**
  * 空状态里的「查看支持的格式」：宽屏切到「支持的格式」面板，
  * 窄屏直接展开第一块，然后把参考区滚进视野。
@@ -292,6 +322,7 @@ window.addEventListener("resize", positionRailGlider);
 
 syncRailMode();
 requestAnimationFrame(positionRailGlider);
+syncThemeToggle();
 
 refresh();
 

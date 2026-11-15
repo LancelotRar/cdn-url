@@ -1,9 +1,10 @@
 /**
  * 设计 token：浅色与深色只换变量值，不写第二套选择器。
- * 任何新组件都应消费这里的变量，不要直接写色值。
+ * 主题由 `<html data-theme>` 决定（页面加载前由内联脚本定好），
+ * 因此这里不需要 `prefers-color-scheme` 媒体查询。
  */
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
 
   --bg: #f7f8fb;
   --surface: #ffffff;
@@ -44,39 +45,39 @@
   --font-mono: ui-monospace, "Cascadia Code", "SFMono-Regular", Consolas, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0a0c11;
-    --surface: #131821;
-    --surface-2: #0e1218;
-    --surface-3: #1a2029;
-    --border: #242c38;
-    --border-strong: #33404f;
-    --text: #e8edf5;
-    --muted: #98a4b6;
-    --faint: #7c8798;
+:root[data-theme="dark"] {
+  color-scheme: dark;
 
-    --accent: #8b8bf5;
-    --accent-hover: #a5a5ff;
-    --accent-soft: #1a1d3a;
-    --accent-line: #2b2f5e;
-    --on-accent: #0b0d16;
+  --bg: #0a0c11;
+  --surface: #131821;
+  --surface-2: #0e1218;
+  --surface-3: #1a2029;
+  --border: #242c38;
+  --border-strong: #33404f;
+  --text: #e8edf5;
+  --muted: #98a4b6;
+  --faint: #7c8798;
 
-    --danger: #ff8a80;
-    --danger-soft: #2a1512;
-    --ok: #4ec77d;
-    --ok-soft: #10251a;
+  --accent: #8b8bf5;
+  --accent-hover: #a5a5ff;
+  --accent-soft: #1a1d3a;
+  --accent-line: #2b2f5e;
+  --on-accent: #0b0d16;
 
-    --code-bg: #0d1116;
-    --glow: rgba(124, 124, 245, 0.16);
-    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.5);
-    --shadow-2: 0 18px 44px -22px rgba(0, 0, 0, 0.85);
-  }
+  --danger: #ff8a80;
+  --danger-soft: #2a1512;
+  --ok: #4ec77d;
+  --ok-soft: #10251a;
 
-  /* 深色下把分段控件的滑块提亮一档，否则与轨道几乎同色。 */
-  .rail-glider {
-    background: var(--surface-3);
-  }
+  --code-bg: #0d1116;
+  --glow: rgba(124, 124, 245, 0.16);
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-2: 0 18px 44px -22px rgba(0, 0, 0, 0.85);
+}
+
+/* 深色下把分段控件的滑块提亮一档，否则与轨道几乎同色。 */
+:root[data-theme="dark"] .rail-glider {
+  background: var(--surface-3);
 }
 
 * {
@@ -163,9 +164,52 @@ body::before {
   font-size: 13px;
 }
 
+.theme-toggle {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin-left: auto;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    background-color 120ms var(--ease),
+    border-color 120ms var(--ease),
+    color 120ms var(--ease);
+}
+
+.theme-toggle:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.theme-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* 按钮显示「点下去会切到哪一档」：浅色下显示月亮，深色下显示太阳。 */
+.theme-icon-sun {
+  display: none;
+}
+
+:root[data-theme="dark"] .theme-icon-sun {
+  display: block;
+}
+
+:root[data-theme="dark"] .theme-icon-moon {
+  display: none;
+}
+
 .brand-badge {
   flex: none;
-  margin-left: auto;
+  margin-left: 0;
   padding: 4px 10px;
   border: 1px solid var(--border);
   border-radius: 999px;
@@ -505,30 +549,99 @@ details[open] > summary::before {
 }
 
 .format-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   margin: 0;
   padding: 0;
 }
 
+/* 每种格式自成一格：左侧色条 + 淡底色区隔，不再是一张平铺的长列表。 */
 .format-item {
-  padding: 10px 0;
+  --tint: var(--accent);
+
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface-2);
+  background: color-mix(in srgb, var(--tint) 7%, var(--surface));
+  box-shadow: inset 2px 0 0 var(--tint);
 }
 
-.format-item:first-child {
-  padding-top: 0;
+.format-item[data-kind="repo"] {
+  --tint: #4f46e5;
 }
 
-.format-item + .format-item {
-  border-top: 1px solid var(--border);
+.format-item[data-kind="raw"] {
+  --tint: #0ea5e9;
+}
+
+.format-item[data-kind="gist-page"] {
+  --tint: #0d9488;
+}
+
+.format-item[data-kind="gist-raw"] {
+  --tint: #16a34a;
+}
+
+.format-item[data-kind="release"] {
+  --tint: #d97706;
+}
+
+.format-item[data-kind="archive"] {
+  --tint: #db2777;
+}
+
+:root[data-theme="dark"] .format-item[data-kind="repo"] {
+  --tint: #8b8bf5;
+}
+
+:root[data-theme="dark"] .format-item[data-kind="raw"] {
+  --tint: #56c8f5;
+}
+
+:root[data-theme="dark"] .format-item[data-kind="gist-page"] {
+  --tint: #2dd4bf;
+}
+
+:root[data-theme="dark"] .format-item[data-kind="gist-raw"] {
+  --tint: #4ade80;
+}
+
+:root[data-theme="dark"] .format-item[data-kind="release"] {
+  --tint: #fbbf24;
+}
+
+:root[data-theme="dark"] .format-item[data-kind="archive"] {
+  --tint: #f472b6;
 }
 
 .format-item dt {
+  display: flex;
+  gap: 7px;
+  align-items: center;
   color: var(--text);
   font-size: 12.5px;
   font-weight: 600;
 }
 
+/* 标题前的色点与左侧色条同色，清单本身就能当作图例。 */
+.format-item dt::before {
+  content: "";
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+  background: var(--tint);
+}
+
 .format-item dd {
-  margin: 3px 0 0;
+  margin: 4px 0 0;
+}
+
+.format-note-line {
+  margin: 6px 0 0;
+  color: var(--muted);
 }
 
 /* 主链接与说明文字都从同一左边界起排，不加内边距，否则每行的起点会差几像素。 */
@@ -547,10 +660,6 @@ details[open] > summary::before {
   font-family: var(--font-mono);
   font-size: 11.5px;
   word-break: break-all;
-}
-
-.format-detail {
-  color: var(--muted);
 }
 
 .format-note {
