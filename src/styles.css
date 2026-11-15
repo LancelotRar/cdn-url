@@ -43,9 +43,9 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #0a0c11;
-    --surface: #11151c;
+    --surface: #131821;
     --surface-2: #0e1218;
-    --surface-3: #161c25;
+    --surface-3: #1a2029;
     --border: #242c38;
     --border-strong: #33404f;
     --text: #e8edf5;
@@ -343,7 +343,7 @@ body::before {
   display: block;
   width: 100%;
   min-height: 132px;
-  max-height: 336px;
+  max-height: 295px;
   padding: 14px;
   border: 1px solid var(--border);
   border-radius: var(--radius-block);
@@ -360,7 +360,8 @@ body::before {
 }
 
 .source-input::placeholder {
-  color: var(--faint);
+  color: var(--muted);
+  opacity: 0.9;
 }
 
 .source-input:hover {
@@ -1068,7 +1069,12 @@ details[open] > summary::before {
   }
 
   .brand {
+    align-items: flex-start;
     margin-bottom: 22px;
+  }
+
+  .brand-mark {
+    margin-top: 1px;
   }
 
   .brand-badge {
