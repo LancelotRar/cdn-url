@@ -85,6 +85,9 @@ const EXAMPLE_SOURCES = [
 
 const DEFAULT_HINT = "一行一条";
 
+/** 已出现过的服务分组：用于只给新出现的分组播一次入场动画。 */
+let shownGroupIds = new Set<string>();
+
 /** 已选主机：按服务分组保存在页面内存，输入变化不重置，整页刷新才回主入口。 */
 const selectedVariantByGroup = new Map<string, string>();
 
@@ -184,7 +187,20 @@ function render(result: ConversionResult): void {
   rejectionsSectionElement.hidden = result.rejections.length === 0;
   rejectionsContainer.replaceChildren(...result.rejections.map(renderRejection));
 
-  groupsContainer.replaceChildren(...result.groups.map(renderGroup));
+  // 只为本次新出现的分组安排入场延迟：输入变化导致的重渲染不会让整页反复闪。
+  const nextGroupIds = new Set(result.groups.map((group) => group.serviceId));
+  const enteringIds = result.groups
+    .map((group) => group.serviceId)
+    .filter((id) => !shownGroupIds.has(id));
+  const step = enteringIds.length > 1 ? Math.min(60, 80 / (enteringIds.length - 1)) : 0;
+
+  groupsContainer.replaceChildren(
+    ...result.groups.map((group) => {
+      const order = enteringIds.indexOf(group.serviceId);
+      return renderGroup(group, order === -1 ? null : order * step);
+    }),
+  );
+  shownGroupIds = nextGroupIds;
 
   matrixCount.textContent = `${result.catalog.services.length} 个主服务 × ${result.catalog.sourceTypes.length} 类源类型。`;
   matrixContainer.replaceChildren(renderMatrix(result.catalog));
@@ -194,16 +210,40 @@ function render(result: ConversionResult): void {
 function renderSummary(counts: ConversionSummary): void {
   if (counts.sourceCount === 0) {
     summary.hidden = true;
-    summary.textContent = "";
+    summary.replaceChildren();
     return;
   }
 
-  const accepted = `${counts.sourceCount} 条源地址 → ${counts.groupCount} 个服务分组`;
-  summary.textContent =
-    counts.rejectionCount === 0
-      ? accepted
-      : `${accepted}，${counts.rejectionCount} 条无法处理`;
+  const nodes: HTMLElement[] = [
+    summaryItem(counts.sourceCount, "条源地址"),
+    summaryArrow(),
+    summaryItem(counts.groupCount, "个服务分组"),
+  ];
+  if (counts.rejectionCount > 0) {
+    nodes.push(summaryItem(counts.rejectionCount, "条无法处理", true));
+  }
+
+  summary.replaceChildren(...nodes);
   summary.hidden = false;
+}
+
+function summaryItem(count: number, unit: string, danger = false): HTMLElement {
+  const item = document.createElement("span");
+  item.className = danger ? "summary-item summary-item-danger" : "summary-item";
+
+  const value = document.createElement("b");
+  value.textContent = String(count);
+
+  item.append(value, document.createTextNode(` ${unit}`));
+  return item;
+}
+
+function summaryArrow(): HTMLElement {
+  const arrow = document.createElement("span");
+  arrow.className = "summary-arrow";
+  arrow.setAttribute("aria-hidden", "true");
+  arrow.textContent = "→";
+  return arrow;
 }
 
 function renderRejection(rejection: Rejection): HTMLElement {
@@ -226,9 +266,14 @@ function renderRejection(rejection: Rejection): HTMLElement {
   return item;
 }
 
-function renderGroup(group: ServiceGroup): HTMLElement {
+function renderGroup(group: ServiceGroup, enterDelayMs: number | null): HTMLElement {
   const section = document.createElement("section");
   section.className = "group";
+
+  if (enterDelayMs !== null) {
+    section.classList.add("is-entering");
+    section.style.setProperty("--enter-delay", `${Math.round(enterDelayMs)}ms`);
+  }
 
   const titleId = `group-${group.serviceId}-title`;
   section.setAttribute("aria-labelledby", titleId);

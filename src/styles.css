@@ -480,11 +480,37 @@ details[open] > summary::before {
 .summary {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 8px;
+  gap: 6px 10px;
   align-items: center;
   margin: 0;
   color: var(--muted);
   font-size: 13px;
+}
+
+.summary-item {
+  display: inline-flex;
+  gap: 4px;
+  align-items: baseline;
+  white-space: nowrap;
+}
+
+.summary-item b {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.summary-item-danger {
+  color: var(--danger);
+}
+
+.summary-item-danger b {
+  color: var(--danger);
+}
+
+.summary-arrow {
+  color: var(--faint);
 }
 
 .section-title {
@@ -506,6 +532,24 @@ details[open] > summary::before {
   border-radius: var(--radius-card);
   background: var(--surface);
   box-shadow: var(--shadow-1);
+}
+
+/* 只给本次新出现的分组播一次入场；总时长由延迟上限压在 240ms 内。 */
+.group.is-entering {
+  animation: group-enter 160ms var(--ease) both;
+  animation-delay: var(--enter-delay, 0ms);
+}
+
+@keyframes group-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .group-head {
@@ -621,7 +665,8 @@ details[open] > summary::before {
   border-top: 1px solid var(--border);
 }
 
-.row:hover {
+.row:hover,
+.row:focus-within {
   background: var(--surface-2);
 }
 
@@ -656,6 +701,11 @@ details[open] > summary::before {
   grid-area: actions;
   display: flex;
   gap: 6px;
+}
+
+/* 行 hover 已经用底色表达指向，按钮只做轻微强调，不压暗主操作。 */
+.row:hover .action-open {
+  border-color: var(--border-strong);
 }
 
 .action {
@@ -856,5 +906,9 @@ details[open] > summary::before {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+
+  .group.is-entering {
+    animation: none !important;
   }
 }
