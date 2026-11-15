@@ -1,5 +1,6 @@
 import "./styles.css";
 
+import { renderCapabilityTags, renderMatrix } from "./capabilities";
 import { copyText } from "./clipboard";
 import { convert } from "./convert";
 import type { Card, ConversionResult, ConvertOptions, ErrorType, ServiceLine } from "./types";
@@ -17,18 +18,21 @@ const input = document.querySelector<HTMLTextAreaElement>("#source-input");
 const cardsElement = document.querySelector<HTMLElement>("#cards");
 const fallbackToggle = document.querySelector<HTMLInputElement>("#jsdelivr-fallbacks");
 const copyAllButton = document.querySelector<HTMLButtonElement>("#copy-all");
+const matrixElement = document.querySelector<HTMLElement>("#matrix");
 
-if (!input || !cardsElement || !fallbackToggle || !copyAllButton) {
-  throw new Error("页面缺少输入框、卡片容器、备用入口开关或复制全部按钮");
+if (!input || !cardsElement || !fallbackToggle || !copyAllButton || !matrixElement) {
+  throw new Error("页面缺少输入框、卡片容器、备用入口开关、复制全部按钮或支持矩阵容器");
 }
+
 
 const cardsContainer = cardsElement;
 const inputElement = input;
 const toggle = fallbackToggle;
 const copyAll = copyAllButton;
+const matrixContainer = matrixElement;
 
 /** 当前渲染结果；页面级复制按钮只读取它，不重新计算。 */
-let currentResult: ConversionResult = { cards: [] };
+let currentResult: ConversionResult | null = null;
 
 /** 开关状态是唯一变化来源；切换后立即用当前输入重算，不需要重新粘贴。 */
 function refresh(): void {
@@ -39,7 +43,7 @@ function refresh(): void {
 input.addEventListener("input", refresh);
 toggle.addEventListener("change", refresh);
 copyAll.addEventListener("click", () => {
-  const urls = allUrls(currentResult);
+  const urls = currentResult === null ? [] : allUrls(currentResult);
   if (urls.length === 0) {
     return;
   }
@@ -52,6 +56,7 @@ function render(result: ConversionResult): void {
   currentResult = result;
   cardsContainer.replaceChildren(...result.cards.map(renderCard));
   copyAll.disabled = allUrls(result).length === 0;
+  matrixContainer.replaceChildren(renderMatrix(result.catalog));
 }
 
 /** 按卡片顺序、卡片内的界面顺序摊平所有加速地址。 */
@@ -110,14 +115,14 @@ function renderCard(card: Card): HTMLElement {
   const list = document.createElement("ul");
   list.className = "lines";
   for (const line of card.lines) {
-    list.append(renderLine(line));
+    list.append(renderLine(line, card.sourceType));
   }
   article.append(list);
 
   return article;
 }
 
-function renderLine(line: ServiceLine): HTMLElement {
+function renderLine(line: ServiceLine, sourceType: Card["sourceType"]): HTMLElement {
   const item = document.createElement("li");
   item.className = "line";
 
@@ -148,7 +153,7 @@ function renderLine(line: ServiceLine): HTMLElement {
   openLink.textContent = "打开";
 
   actions.append(copyButton, openLink);
-  item.append(service, url, actions);
+  item.append(service, renderCapabilityTags(line, sourceType), url, actions);
 
   return item;
 }

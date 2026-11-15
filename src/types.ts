@@ -68,7 +68,25 @@ export interface ServiceLine {
   serviceId: string;
   serviceName: string;
   url: string;
+  /** 该服务支持的源类型：行上据此渲染能力标签，与底部矩阵同源。 */
   capabilities: readonly SourceType[];
+}
+
+/** 服务目录里的一条记录：渲染能力标签与支持矩阵所需的全部信息。 */
+export interface CatalogEntry {
+  serviceId: string;
+  serviceName: string;
+  capabilities: readonly SourceType[];
+}
+
+/**
+ * 渲染支持矩阵所需的服务目录。
+ * 只含主服务（不含 jsDelivr 备用入口），因此矩阵固定 8 行 × 4 列。
+ */
+export interface ServiceCatalog {
+  /** 矩阵列顺序：四类源类型。 */
+  sourceTypes: readonly SourceType[];
+  services: readonly CatalogEntry[];
 }
 
 /** 一条源地址对应的卡片。 */
@@ -87,4 +105,6 @@ export interface Card {
 /** `convert` 的输出：界面渲染所需的全部内容。 */
 export interface ConversionResult {
   cards: Card[];
+  /** 服务目录：能力标签与底部矩阵都渲染这里，界面不直接读注册表。 */
+  catalog: ServiceCatalog;
 }
