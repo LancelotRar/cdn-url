@@ -320,6 +320,11 @@ railTabsBar.addEventListener("keydown", (event) =>
 railMedia.addEventListener("change", syncRailMode);
 window.addEventListener("resize", positionRailGlider);
 
+// 轨道宽度会随滚动条、断点与字体变化，Observe 一次就能一直在正确位置。
+new ResizeObserver(() => {
+  positionRailGlider();
+}).observe(railTabsBar);
+
 syncRailMode();
 requestAnimationFrame(positionRailGlider);
 syncThemeToggle();

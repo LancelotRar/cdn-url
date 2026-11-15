@@ -75,10 +75,8 @@
   --shadow-2: 0 18px 44px -22px rgba(0, 0, 0, 0.85);
 }
 
-/* 深色下把分段控件的滑块提亮一档，否则与轨道几乎同色。 */
-:root[data-theme="dark"] .rail-glider {
-  background: var(--surface-3);
-}
+/* 深色下淡底与轨道仍然分得开，无需额外覆盖。 */
+
 
 * {
   box-sizing: border-box;
@@ -424,8 +422,9 @@ body::before {
   gap: 2px;
   margin: 12px;
   padding: 4px;
+  border: 1px solid var(--border);
   border-radius: var(--radius-block);
-  background: var(--surface-2);
+  background: var(--surface-3);
 }
 
 .rail-tabs[hidden] {
@@ -436,9 +435,9 @@ body::before {
   position: absolute;
   top: 0;
   left: 0;
+  border: 1px solid var(--accent-line);
   border-radius: 8px;
-  background: var(--surface);
-  box-shadow: var(--shadow-1);
+  background: var(--accent-soft);
   transition:
     transform 200ms var(--ease),
     width 200ms var(--ease),
@@ -465,7 +464,7 @@ body::before {
 }
 
 .rail-tab[aria-selected="true"] {
-  color: var(--text);
+  color: var(--accent);
   font-weight: 600;
 }
 
