@@ -135,6 +135,8 @@ function renderGroup(group: ServiceGroup): HTMLElement {
   title.className = "group-title";
   title.id = titleId;
   title.textContent = group.serviceName;
+  // 标题关联到内容面板：读屏从标题即可跳到本组行列表。
+  title.setAttribute("aria-controls", groupPanelId(group.serviceId));
 
   identity.append(title, renderCapabilityTags(group.capabilities));
 
@@ -155,10 +157,12 @@ function renderGroup(group: ServiceGroup): HTMLElement {
   const panel = document.createElement("div");
   panel.id = groupPanelId(group.serviceId);
 
-  // 只有一个入口时整组没有切换态：不渲染选项卡，面板也不承担 tabpanel 语义。
+  // 只有一个入口时整组没有切换态：不渲染选项卡，面板由组标题标注。
   const hasTabs = group.variants.length > 1;
   if (hasTabs) {
     panel.setAttribute("role", "tabpanel");
+  } else {
+    panel.setAttribute("aria-labelledby", titleId);
   }
 
   const list = document.createElement("ul");
@@ -169,7 +173,7 @@ function renderGroup(group: ServiceGroup): HTMLElement {
   let tabs: HTMLButtonElement[] = [];
 
   const currentVariant = (): ServiceVariant => group.variants[selectedIndex];
-  const idleCopyLabel = (): string => groupCopyLabel(currentVariant(), group.variants.length);
+  const idleCopyLabel = (): string => groupCopyLabel(currentVariant());
 
   // 原地同步：只重画这一组的行、计数、复制按钮与选项卡状态，焦点留在被按的 tab 上。
   function sync(): void {
@@ -230,42 +234,7 @@ function renderGroup(group: ServiceGroup): HTMLElement {
     });
 
     tablist.append(...tabs);
-    tablist.addEventListener("keydown", (event) => {
-      if (event.altKey || event.ctrlKey || event.metaKey) {
-        return;
-      }
-
-      const target = event.target;
-      if (!(target instanceof HTMLButtonElement)) {
-        return;
-      }
-
-      const index = tabs.indexOf(target);
-      if (index === -1) {
-        return;
-      }
-
-      let next: number;
-      switch (event.key) {
-        case "ArrowRight":
-          next = (index + 1) % tabs.length;
-          break;
-        case "ArrowLeft":
-          next = (index - 1 + tabs.length) % tabs.length;
-          break;
-        case "Home":
-          next = 0;
-          break;
-        case "End":
-          next = tabs.length - 1;
-          break;
-        default:
-          return;
-      }
-
-      event.preventDefault();
-      select(next, true);
-    });
+    tablist.addEventListener("keydown", (event) => handleTabKeydown(event, tabs, select));
 
     section.append(tablist);
   }
@@ -274,6 +243,51 @@ function renderGroup(group: ServiceGroup): HTMLElement {
   sync();
 
   return section;
+}
+
+/**
+ * 选项卡键盘操作：左右循环、Home/End 到首末。
+ * 带 Ctrl/Alt/Meta 修饰键或非方向/首末键时交回浏览器，不拦截。
+ */
+function handleTabKeydown(
+  event: KeyboardEvent,
+  tabs: readonly HTMLButtonElement[],
+  select: (index: number, moveFocus: boolean) => void,
+): void {
+  if (event.altKey || event.ctrlKey || event.metaKey) {
+    return;
+  }
+
+  const target = event.target;
+  if (!(target instanceof HTMLButtonElement)) {
+    return;
+  }
+
+  const index = tabs.indexOf(target);
+  if (index === -1) {
+    return;
+  }
+
+  let next: number;
+  switch (event.key) {
+    case "ArrowRight":
+      next = (index + 1) % tabs.length;
+      break;
+    case "ArrowLeft":
+      next = (index - 1 + tabs.length) % tabs.length;
+      break;
+    case "Home":
+      next = 0;
+      break;
+    case "End":
+      next = tabs.length - 1;
+      break;
+    default:
+      return;
+  }
+
+  event.preventDefault();
+  select(next, true);
 }
 
 /** 存的是入口 serviceId 而不是下标；入口消失（如开关关闭）时暂用主入口且不抹掉记忆。 */
@@ -301,12 +315,8 @@ function hostShortName(endpoint: string): string {
   return hostName(endpoint).split(".")[0];
 }
 
-/** 组级复制按钮文案：多入口时带当前主机短名，避免复制到看不见的那个入口。 */
-function groupCopyLabel(variant: ServiceVariant, variantCount: number): string {
-  if (variantCount <= 1) {
-    return "复制整组";
-  }
-
+/** 组级复制按钮文案始终带当前主机短名，单入口时也能确认复制的是哪个主机。 */
+function groupCopyLabel(variant: ServiceVariant): string {
   return `复制整组 · ${hostShortName(variant.endpoint)}`;
 }
 
@@ -349,7 +359,7 @@ function renderRow(row: ResultRow): HTMLElement {
   copyButton.className = "action action-copy";
   copyButton.textContent = "复制";
   copyButton.addEventListener("click", () => {
-    void handleCopy(copyButton, row.url);
+    void handleCopy(copyButton, row.url, () => "复制");
   });
 
   const openLink = document.createElement("a");
@@ -372,12 +382,12 @@ function renderRow(row: ResultRow): HTMLElement {
 async function handleCopy(
   button: HTMLButtonElement,
   text: string,
-  idleLabel: string | (() => string) = "复制",
+  idleLabel: () => string,
 ): Promise<void> {
   const copied = await copyText(text);
   button.textContent = copied ? "已复制" : "复制失败";
   window.setTimeout(() => {
-    // 组级按钮的文案跟随当前主机，反馈结束时按当时的入口重算，而不是写回旧文案。
-    button.textContent = typeof idleLabel === "string" ? idleLabel : idleLabel();
+    // 空闲文案用回调：组级按钮跟随当前主机，反馈结束时按当时入口重算，而不是写回旧文案。
+    button.textContent = idleLabel();
   }, 1500);
 }

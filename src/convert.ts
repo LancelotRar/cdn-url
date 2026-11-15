@@ -1,4 +1,4 @@
-import { identityOf, normalize } from "./normalize";
+import { identityOf, labelOf, normalize } from "./normalize";
 import { SERVICES, buildAcceleratedUrl } from "./services";
 import type {
   CatalogEntry,
@@ -46,7 +46,7 @@ export function convert(text: string, options: ConvertOptions = {}): ConversionR
   const firstLineByIdentity = new Map<string, number>();
 
   // 行号按非空输入行计：空行与纯空白行既不占号，也不进摘要。
-  let line = 0;
+  let lineNumber = 0;
 
   for (const rawLine of text.split(/\r?\n/)) {
     const source = rawLine.trim();
@@ -54,22 +54,22 @@ export function convert(text: string, options: ConvertOptions = {}): ConversionR
       continue;
     }
 
-    line += 1;
+    lineNumber += 1;
     const normalized = normalize(source);
     if (normalized.kind === "error") {
       // 被拒绝的源不参与分组与等价判定，只保留行号与原因。
-      rejections.push({ line, source, error: normalized.error });
+      rejections.push({ line: lineNumber, source, error: normalized.error });
       continue;
     }
 
     const identity = identityOf(normalized);
     const firstLine = firstLineByIdentity.get(identity);
     if (firstLine === undefined) {
-      firstLineByIdentity.set(identity, line);
+      firstLineByIdentity.set(identity, lineNumber);
     }
 
     accepted.push({
-      line,
+      line: lineNumber,
       source,
       target: normalized,
       equivalentTo: firstLine ?? null,
@@ -79,7 +79,7 @@ export function convert(text: string, options: ConvertOptions = {}): ConversionR
 
   const groups = buildGroups(accepted, includeFallbacks);
   const summary: ConversionSummary = {
-    sourceCount: line,
+    sourceCount: lineNumber,
     groupCount: groups.length,
     rejectionCount: rejections.length,
   };
@@ -104,7 +104,10 @@ function buildCatalog(): ServiceCatalog {
   };
 }
 
-/** 按注册表顺序构造分组；主服务无行时整组不输出，备用入口不增加分组。 */
+/**
+ * 按注册表顺序构造分组；主服务无行时整组不输出，备用入口不增加分组。
+ * 分组存续只看主入口行：备用入口有行而主入口没有，也不会凭空撑起一组。
+ */
 function buildGroups(
   accepted: readonly AcceptedSource[],
   includeFallbacks: boolean,
@@ -116,8 +119,8 @@ function buildGroups(
       continue;
     }
 
-    const variants = buildVariants(service, accepted, includeFallbacks);
-    if (variants[0].rows.length === 0) {
+    const mainRows = buildRows(service, accepted);
+    if (mainRows.length === 0) {
       continue;
     }
 
@@ -125,30 +128,51 @@ function buildGroups(
       serviceId: service.id,
       serviceName: service.name,
       capabilities: service.capabilities,
-      variants,
+      variants: buildVariants(service, accepted, includeFallbacks, mainRows),
     });
   }
 
   return groups;
 }
 
-/** 主入口排第一位；备用入口只有在开关打开时才追加，并保持注册表顺序。 */
+/**
+ * 主入口排第一位；备用入口只有在开关打开时才追加，并保持注册表顺序。
+ * 主入口的行由调用方算好并复用，避免重复过滤。
+ */
 function buildVariants(
   main: Service,
   accepted: readonly AcceptedSource[],
   includeFallbacks: boolean,
+  mainRows: readonly ResultRow[],
 ): ServiceVariant[] {
-  const services = includeFallbacks
-    ? [main, ...SERVICES.filter((service) => service.fallbackOf === main.id)]
-    : [main];
+  const variants: ServiceVariant[] = [variantOf(main, mainRows, false)];
+  if (!includeFallbacks) {
+    return variants;
+  }
 
-  return services.map((service) => ({
+  for (const service of SERVICES) {
+    if (service.fallbackOf !== main.id) {
+      continue;
+    }
+
+    variants.push(variantOf(service, buildRows(service, accepted), true));
+  }
+
+  return variants;
+}
+
+function variantOf(
+  service: Service,
+  rows: readonly ResultRow[],
+  isFallback: boolean,
+): ServiceVariant {
+  return {
     serviceId: service.id,
     serviceName: service.name,
     endpoint: service.endpoint,
-    isFallback: service.id !== main.id,
-    rows: buildRows(service, accepted),
-  }));
+    isFallback,
+    rows: [...rows],
+  };
 }
 
 /** 组内行序等于输入顺序；能力不支持的源不出现，因此组内地址必然是同一语法。 */
@@ -163,29 +187,4 @@ function buildRows(service: Service, accepted: readonly AcceptedSource[]): Resul
       note: entry.note,
       equivalentTo: entry.equivalentTo,
     }));
-}
-
-/**
- * 行首短标识：只放能定位到文件的最短信息，完整源地址仍保留在行上。
- * release 资产与归档包只有透传地址，标识从其中按形状还原。
- */
-function labelOf(target: NormalizedTarget): string {
-  if (target.kind === "repo-file") {
-    return `${target.owner}/${target.repo}@${target.ref}/${target.path}`;
-  }
-  if (target.kind === "gist") {
-    return `gist @${target.user}/${target.gistId}`;
-  }
-
-  const segments = new URL(target.directUrl).pathname
-    .split("/")
-    .filter((segment) => segment.length > 0);
-  if (target.kind === "release-asset") {
-    // {owner}/{repo}/releases/download/{tag}/{file}
-    return `${segments[4]}/${segments.slice(5).join("/")}`;
-  }
-
-  // {owner}/{repo}/archive/refs/{heads|tags}/{ref}.zip
-  const ref = segments[segments.length - 1].replace(/\.zip$/, "");
-  return `${segments[1]}@${ref}.zip`;
 }

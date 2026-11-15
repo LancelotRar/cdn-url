@@ -78,7 +78,6 @@ export const SERVICES: readonly Service[] = [
     syntax: "rearrange",
     stripScheme: false,
     capabilities: ["repo-file"],
-    fallback: true,
     fallbackOf: "jsdelivr",
   },
   {
@@ -88,7 +87,6 @@ export const SERVICES: readonly Service[] = [
     syntax: "rearrange",
     stripScheme: false,
     capabilities: ["repo-file"],
-    fallback: true,
     fallbackOf: "jsdelivr",
   },
   {
@@ -98,7 +96,6 @@ export const SERVICES: readonly Service[] = [
     syntax: "rearrange",
     stripScheme: false,
     capabilities: ["repo-file"],
-    fallback: true,
     fallbackOf: "jsdelivr",
   },
 ];

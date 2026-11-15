@@ -35,11 +35,28 @@ export interface GistTarget {
   directUrl: string;
 }
 
-/** release 资产与归档包没有直链形态，以清洗后的原地址透传。 */
-export interface PassthroughTarget {
-  kind: "release-asset" | "archive";
+/** release 资产与归档包没有直链形态，以清洗后的原地址透传；片段用于构造行标识。 */
+export interface ReleaseAssetTarget {
+  kind: "release-asset";
+  /** 透传后的原地址（已清洗查询串）。 */
   directUrl: string;
+  tag: string;
+  /** 文件名；`tag` 与其拼成 `tag/file` 标识。 */
+  file: string;
 }
+
+/** 归档包：`ref` 保留斜杠（如 `feature/x`），与仓库名拼成 `repo@ref.zip`。 */
+export interface ArchiveTarget {
+  kind: "archive";
+  /** 透传后的原地址（已清洗查询串）。 */
+  directUrl: string;
+  repo: string;
+  /** 完整 ref（去掉归档包 URL 末尾的 `.zip`）。 */
+  ref: string;
+}
+
+/** 两类透传目标：直接以原地址参与加速，标识由归一化时保留的片段构造。 */
+export type PassthroughTarget = ReleaseAssetTarget | ArchiveTarget;
 
 /** 归一化目标：两种地址语法共用的入参。 */
 export type NormalizedTarget = RepoFileTarget | GistTarget | PassthroughTarget;
@@ -53,9 +70,7 @@ export interface Service {
   /** 前缀拼接时是否去掉直链的协议前缀。 */
   stripScheme: boolean;
   capabilities: readonly SourceType[];
-  /** 备用入口：只有对应开关打开时才参与生成，默认不列出。 */
-  fallback?: boolean;
-  /** 备用入口归属的主服务 id；主服务本身没有这个字段。 */
+  /** 备用入口归属的主服务 id；有该字段即视为备用入口（默认不显示、不单独成组）。 */
   fallbackOf?: string;
 }
 
@@ -97,13 +112,19 @@ export interface ServiceVariant {
 }
 
 /**
- * 服务分组：以加速服务为主轴的一块，组内所有加速地址属于同一地址语法。
- * 主入口排在 `variants` 第一位，备用入口开关关闭时只剩主入口。
+ * 服务在界面上的展示信息：组头能力标签、服务目录与支持矩阵共用同一形状。
  */
-export interface ServiceGroup {
+export interface ServiceDescriptor {
   serviceId: string;
   serviceName: string;
   capabilities: readonly SourceType[];
+}
+
+/**
+ * 服务分组：以加速服务为主轴的一块，组内所有加速地址属于同一地址语法。
+ * 主入口排在 `variants` 第一位，备用入口开关关闭时只剩主入口。
+ */
+export interface ServiceGroup extends ServiceDescriptor {
   variants: ServiceVariant[];
 }
 
@@ -134,11 +155,7 @@ export interface ConversionResult {
 }
 
 /** 服务目录里的一条记录：渲染能力标签与支持矩阵所需的全部信息。 */
-export interface CatalogEntry {
-  serviceId: string;
-  serviceName: string;
-  capabilities: readonly SourceType[];
-}
+export type CatalogEntry = ServiceDescriptor;
 
 /**
  * 渲染支持矩阵所需的服务目录。

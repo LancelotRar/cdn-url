@@ -1,4 +1,9 @@
-import type { ErrorType, NormalizedTarget } from "./types";
+import type {
+  ArchiveTarget,
+  ErrorType,
+  NormalizedTarget,
+  ReleaseAssetTarget,
+} from "./types";
 
 /** 归一化结果：要么是可以构造加速地址的源，要么是一条拒绝原因。 */
 export type Normalized = NormalizedTarget | { kind: "error"; error: ErrorType };
@@ -17,6 +22,25 @@ export function identityOf(target: NormalizedTarget): string {
     return `gist:${target.user}/${target.gistId}`;
   }
   return `${target.kind}:${target.directUrl}`;
+}
+
+/**
+ * 行首短标识：只放能定位到文件的最短信息，完整源地址仍保留在行上。
+ * 仓库单文件 `owner/repo@ref/path`、gist `gist @user/id`、
+ * release 资产 `tag/file`、归档包 `repo@ref.zip`。
+ * 不复原 `directUrl` 的段下标：归档包的 ref 可能含斜杠，只能靠归一化时留下的片段。
+ */
+export function labelOf(target: NormalizedTarget): string {
+  if (target.kind === "repo-file") {
+    return `${target.owner}/${target.repo}@${target.ref}/${target.path}`;
+  }
+  if (target.kind === "gist") {
+    return `gist @${target.user}/${target.gistId}`;
+  }
+  if (target.kind === "release-asset") {
+    return `${target.tag}/${target.file}`;
+  }
+  return `${target.repo}@${target.ref}.zip`;
 }
 
 const RAW_HOST = "raw.githubusercontent.com";
@@ -167,7 +191,7 @@ function normalizeGitHubPage(url: URL): Normalized {
     if (tag === undefined || file.length === 0) {
       return rejected("unrecognized");
     }
-    return passthroughTarget("release-asset", segments, url);
+    return releaseAssetTarget(tag, file, segments, url);
   }
 
   if (kind === "archive" && segments[3] === "refs") {
@@ -176,22 +200,36 @@ function normalizeGitHubPage(url: URL): Normalized {
     if ((refKind !== "heads" && refKind !== "tags") || !fileName.endsWith(".zip")) {
       return rejected("unrecognized");
     }
-    return passthroughTarget("archive", segments, url);
+    // ref 可能含斜杠（`feature/x.zip`），因此从完整文件名剥掉后缀，不能只取最后一段。
+    return archiveTarget(repo, fileName.slice(0, -".zip".length), segments, url);
   }
 
   return rejected("unrecognized");
 }
 
-/** release 资产与归档包：只清洗查询串，路径按原样透传。 */
-function passthroughTarget(
-  kind: "release-asset" | "archive",
-  segments: string[],
+/** 透传地址：只清洗查询串，路径按原样重建。 */
+function passthroughUrl(segments: readonly string[], url: URL): string {
+  return `https://github.com/${segments.join("/")}${cleanQuery(url)}`;
+}
+
+/** release 资产：`tag`/`file` 同时用于透传地址与 `tag/file` 行标识。 */
+function releaseAssetTarget(
+  tag: string,
+  file: string,
+  segments: readonly string[],
   url: URL,
-): Normalized {
-  return {
-    kind,
-    directUrl: `https://github.com/${segments.join("/")}${cleanQuery(url)}`,
-  };
+): ReleaseAssetTarget {
+  return { kind: "release-asset", directUrl: passthroughUrl(segments, url), tag, file };
+}
+
+/** 归档包：`repo` 与完整 `ref` 用于 `repo@ref.zip` 行标识。 */
+function archiveTarget(
+  repo: string,
+  ref: string,
+  segments: readonly string[],
+  url: URL,
+): ArchiveTarget {
+  return { kind: "archive", directUrl: passthroughUrl(segments, url), repo, ref };
 }
 
 /**
