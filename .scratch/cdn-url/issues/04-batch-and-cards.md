@@ -4,7 +4,7 @@
 
 **Blocked by:** 03
 
-**Status:** claimed
+**Status:** resolved
 
 - [x] 粘贴 5 条地址的文本得到 5 张卡片，每张卡片显示它对应的源地址
 - [x] 文本中的空行被忽略，不产出卡片也不报错

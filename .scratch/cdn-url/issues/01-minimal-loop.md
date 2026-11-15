@@ -4,7 +4,7 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** claimed
+**Status:** resolved
 
 - [x] 产物是单个自包含 HTML 文件，双击能在浏览器里打开并渲染，不依赖本地服务器
 - [x] 粘贴一条 `raw.githubusercontent.com` 仓库单文件地址后，出现且仅出现一行加速地址，文本为 `https://gh-proxy.com/raw.githubusercontent.com/{owner}/{repo}/{ref}/{path}`

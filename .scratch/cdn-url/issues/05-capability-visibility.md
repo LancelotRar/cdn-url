@@ -4,7 +4,7 @@
 
 **Blocked by:** 03
 
-**Status:** claimed
+**Status:** resolved
 
 - [x] 每条结果行显示该服务的能力标签，覆盖仓库单文件、gist 直链、release 资产、归档包四类
 - [x] 标签内容与该服务实际出现的场合一致：`github.chenc.dev` 的行上不出现 gist 标签

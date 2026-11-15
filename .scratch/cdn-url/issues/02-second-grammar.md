@@ -4,7 +4,7 @@
 
 **Blocked by:** 01
 
-**Status:** claimed
+**Status:** resolved
 
 - [x] 一条仓库单文件地址产出 3 行：`gh-proxy.com`、`cdn.jsdelivr.net`、`cdn.jsdmirror.cn`
 - [x] 两个路径重排式服务的地址形如 `https://cdn.jsdelivr.net/gh/{owner}/{repo}@{ref}/{path}`，ref 显式出现

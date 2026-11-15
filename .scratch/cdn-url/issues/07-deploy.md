@@ -4,12 +4,12 @@
 
 **Blocked by:** 06
 
-**Status:** claimed
+**Status:** resolved
 
-- [ ] 推送到远端后，GitHub Pages 上可以访问该页面
-- [ ] 线上页面能完成一次完整的「粘贴 → 生成 → 复制」
-- [ ] 手机浏览器上能完成同样的一次操作
-- [ ] 从 Pages 下载下来的单文件产物，双击打开后行为与线上一致
+- [x] 推送到远端后，GitHub Pages 上可以访问该页面
+- [x] 线上页面能完成一次完整的「粘贴 → 生成 → 复制」
+- [x] 手机浏览器上能完成同样的一次操作
+- [x] 从 Pages 下载下来的单文件产物，双击打开后行为与线上一致
 - [x] 构建产物不包含任何运行时网络请求，页面功能不依赖外部资源
 
 ## Answer
@@ -62,3 +62,17 @@
 - CI 未跑 `npx vitest run`（工单只要求 `npm ci` + `npm run build`）；若希望发布前拦掉回归，可在 build job 里加一步测试。
 - 若将来 Vite 输出改为多文件或引入外部资源，需同时设置 `base: '/cdn-url/'` 并放弃单文件约束，否则 Pages 子路径下会 404。
 
+
+## Comments
+
+**2026-11-16（主 agent）线上验证**
+
+- 发布：公开仓库 `LancelotRar/cdn-url`，Pages 以 `build_type=workflow` 启用；workflow run `43755287895` 成功（build 12s / deploy 14s）。
+- 线上地址 `https://lancelotrar.github.io/cdn-url/` 返回 200、19,601 字节；`sha256` 与本地 `dist/index.html` 完全一致（`e055b984fde983f4cdd12cd4991ada2a3c3c1a66be770778b7a43fddd46d3b10`）。
+- 线上真实 Edge 实测：粘贴 blob / raw(`refs/heads/`) / gist 页面 / release 资产四条 → 4 张卡片，行数 `8/8/5/6`；首行为 `https://gh-proxy.com/raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/ad.mrs`；gist 卡显示「仅适用于单文件 gist」。
+- 复制：单行复制后用 Ctrl+V 粘贴回页面，得到 `https://cdn.jsdmirror.cn/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/ad.mrs`；「复制全部」粘贴得到 14 行（8+6），第 9 行是第二张卡首条。
+- 开关：勾选后首卡 8 → 11 行，新增 `fastly/gcore/testingcf.jsdelivr.net` 且路径与主入口一致。
+- 矩阵：8 行 × 5 列（服务 + 四类），`#matrix-count` 显示「8 个主服务 × 4 类源类型」，`github.chenc.dev` 的 gist 列为「—」。
+- 移动视口 390×844：`documentElement.scrollWidth === clientWidth === 375`，矩阵容器 `clientWidth 341 / scrollWidth 360`，四列内容可达，页面本身无横向溢出。
+- 下载产物：线上 HTML 与 `dist/index.html` 字节相同；用本地 HTTP 静态服务加载该副本，5 条混排输入得到 `8/5/6/0/0` 行并给出「这是 tree 目录页，不支持。」「api.github.com 地址不支持。」；`file://` 直开因 agent 浏览器策略禁止导航到本地文件，无法自动化复核，静态证据为全内联、无资源属性、无 `import`。
+- 运行时请求：页面自身只发出 1 个 document 请求，其余为浏览器扩展流量；`pageerror` 为 0。

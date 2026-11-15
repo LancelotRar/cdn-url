@@ -4,7 +4,7 @@
 
 **Blocked by:** 02
 
-**Status:** claimed
+**Status:** resolved
 
 - [x] 开关默认处于关闭状态
 - [x] 关闭时结果中只有主入口，不出现任何备用入口

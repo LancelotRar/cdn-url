@@ -4,7 +4,7 @@
 
 **Blocked by:** 02
 
-**Status:** claimed
+**Status:** resolved
 
 - [x] 仓库单文件产出 8 个加速地址（两个路径重排式 + 六个前缀拼接式）
 - [x] gist 直链产出 7 个，`github.chenc.dev` 不出现（实现为 5 行：两个路径重排式不支持 gist，见 Answer 的冲突说明）
