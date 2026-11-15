@@ -29,6 +29,14 @@ const rejectionsElement = document.querySelector<HTMLElement>("#rejections");
 const groupsElement = document.querySelector<HTMLElement>("#groups");
 const matrixElement = document.querySelector<HTMLElement>("#matrix");
 const matrixCountElement = document.querySelector<HTMLElement>("#matrix-count");
+const inputCountElement = document.querySelector<HTMLElement>("#input-count");
+const emptyStateElement = document.querySelector<HTMLElement>("#empty-state");
+const clearButton = document.querySelector<HTMLButtonElement>("#clear-input");
+const fillExampleButton = document.querySelector<HTMLButtonElement>("#fill-example");
+const pasteButton = document.querySelector<HTMLButtonElement>("#paste-input");
+const composerHint = document.querySelector<HTMLElement>("#composer-hint");
+const emptyFillButton = document.querySelector<HTMLButtonElement>("#empty-fill");
+const emptyFormatsButton = document.querySelector<HTMLButtonElement>("#empty-formats");
 
 if (
   !input ||
@@ -37,10 +45,18 @@ if (
   !rejectionsElement ||
   !groupsElement ||
   !matrixElement ||
-  !matrixCountElement
+  !matrixCountElement ||
+  !inputCountElement ||
+  !emptyStateElement ||
+  !clearButton ||
+  !fillExampleButton ||
+  !pasteButton ||
+  !composerHint ||
+  !emptyFillButton ||
+  !emptyFormatsButton
 ) {
   throw new Error(
-    "页面缺少输入框、摘要、无法处理区、分组容器、支持矩阵容器或矩阵数量提示",
+    "页面缺少输入框、摘要、无法处理区、分组容器、支持矩阵容器、输入卡工具条或空状态",
   );
 }
 
@@ -51,16 +67,114 @@ const rejectionsContainer = rejectionsElement;
 const groupsContainer = groupsElement;
 const matrixContainer = matrixElement;
 const matrixCount = matrixCountElement;
+const inputCount = inputCountElement;
+const emptyState = emptyStateElement;
+const clearInputButton = clearButton;
+const fillExample = fillExampleButton;
+const pasteInputButton = pasteButton;
+const hintElement = composerHint;
+const emptyFill = emptyFillButton;
+const emptyFormats = emptyFormatsButton;
+
+/** 示例源地址：仓库单文件、gist 直链、release 资产各一条，覆盖三种归一化分支。 */
+const EXAMPLE_SOURCES = [
+  "https://github.com/LancelotRar/best-cf-ips/blob/main/best-cf-ip-scanned-top20.txt",
+  "https://gist.githubusercontent.com/mn9ri4jdm5/fd2e299390c88720b4cb026b2795126a/raw/53489_qctld.md",
+  "https://github.com/MetaCubeX/mihomo/releases/download/v1.19.34/mihomo-linux-amd64-v3-v1.19.34.gz",
+].join("\n");
+
+const DEFAULT_HINT = "一行一条";
 
 /** 已选主机：按服务分组保存在页面内存，输入变化不重置，整页刷新才回主入口。 */
 const selectedVariantByGroup = new Map<string, string>();
 
 /** 输入变化是唯一重算来源；结果按服务重新分组，备用入口始终在组内。 */
 function refresh(): void {
-  render(convert(inputElement.value));
+  const result = convert(inputElement.value);
+  render(result);
+  syncComposer(result.summary);
+  autoGrow();
+}
+
+/**
+ * 输入卡只显示「有效条数」：源地址条数减去无法处理条数。
+ * 两个数都来自 `convert` 的摘要，界面不另算一套口径。
+ */
+function syncComposer(counts: ConversionSummary): void {
+  const accepted = counts.sourceCount - counts.rejectionCount;
+  inputCount.textContent = counts.sourceCount === 0 ? "0 条" : `有效 ${accepted} 条`;
+  emptyState.hidden = counts.sourceCount > 0;
+}
+
+/** 输入框随内容增高，超出 CSS 的 max-height 后转为内部滚动。 */
+function autoGrow(): void {
+  inputElement.style.height = "auto";
+  // scrollHeight 不含边框，补 2px 才不会因为差一个像素而常驻滚动条。
+  inputElement.style.height = `${inputElement.scrollHeight + 2}px`;
+}
+
+let hintTimer = 0;
+
+/** 工具条提示复用同一个位置，3 秒后回到默认文案，不弹模态。 */
+function showHint(text: string): void {
+  hintElement.textContent = text;
+  window.clearTimeout(hintTimer);
+  hintTimer = window.setTimeout(() => {
+    hintElement.textContent = DEFAULT_HINT;
+  }, 3000);
+}
+
+/** 整块替换输入内容并重算；示例按钮与粘贴成功都走这一条路径。 */
+function setInputText(value: string): void {
+  inputElement.value = value;
+  refresh();
+  inputElement.focus();
+}
+
+/**
+ * 读剪贴板失败很常见（权限、非安全上下文、`file://`），
+ * 因此失败时聚焦输入框并提示手动粘贴，而不是静默失败或弹窗。
+ */
+async function pasteFromClipboard(): Promise<void> {
+  if (!navigator.clipboard?.readText) {
+    inputElement.focus();
+    showHint("按 Ctrl+V 粘贴");
+    return;
+  }
+
+  try {
+    const text = await navigator.clipboard.readText();
+    if (text.trim() === "") {
+      inputElement.focus();
+      showHint("剪贴板里没有内容");
+      return;
+    }
+    setInputText(text);
+  } catch {
+    inputElement.focus();
+    showHint("按 Ctrl+V 粘贴");
+  }
 }
 
 input.addEventListener("input", refresh);
+window.addEventListener("resize", autoGrow);
+
+clearInputButton.addEventListener("click", () => {
+  inputElement.value = "";
+  refresh();
+  inputElement.focus();
+});
+
+fillExample.addEventListener("click", () => setInputText(EXAMPLE_SOURCES));
+emptyFill.addEventListener("click", () => setInputText(EXAMPLE_SOURCES));
+pasteInputButton.addEventListener("click", () => {
+  void pasteFromClipboard();
+});
+
+/** 空状态里的「支持的 6 类地址」把参考区滚进视野，不切换页面状态。 */
+emptyFormats.addEventListener("click", () => {
+  document.querySelector(".help-row")?.scrollIntoView({ behavior: "smooth", block: "center" });
+});
 
 refresh();
 
