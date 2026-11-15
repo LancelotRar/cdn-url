@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { convert } from "../src/convert";
+import { SERVICES } from "../src/services";
 import type { SourceType } from "../src/types";
 
 const REPO_FILE = "https://raw.githubusercontent.com/microsoft/TypeScript/main/README.md";
@@ -9,64 +10,70 @@ const RELEASE_ASSET =
   "https://github.com/vernesong/OpenClash/releases/download/v0.46.003/clash-linux-amd64.tar.gz";
 const ARCHIVE = "https://github.com/vernesong/OpenClash/archive/refs/heads/master.zip";
 
-const ALL_CAPABILITIES: SourceType[] = [
-  "repo-file",
-  "gist",
-  "release-asset",
-  "archive",
-];
+/** 矩阵列顺序是 spec 固定的四类源类型，不随注册表增长变化。 */
+const SOURCE_TYPES: SourceType[] = ["repo-file", "gist", "release-asset", "archive"];
 
-/** spec 的 Implementation Decisions 表格：8 个主服务及其能力集合。 */
-const EXPECTED_CATALOG: { name: string; capabilities: SourceType[] }[] = [
-  { name: "gh-proxy.com", capabilities: ALL_CAPABILITIES },
-  { name: "cdn.jsdelivr.net", capabilities: ["repo-file"] },
-  { name: "cdn.jsdmirror.cn", capabilities: ["repo-file"] },
-  { name: "ghproxy.net", capabilities: ALL_CAPABILITIES },
-  { name: "ghfast.top", capabilities: ALL_CAPABILITIES },
-  { name: "ghproxy.icu", capabilities: ALL_CAPABILITIES },
-  { name: "fastgit.cc", capabilities: ALL_CAPABILITIES },
-  { name: "github.chenc.dev", capabilities: ["repo-file", "release-asset", "archive"] },
-];
+/** 主服务就是注册表里非备用入口的条目：目录应恰好是这一份，不另立名单。 */
+const PRIMARY_SERVICES = SERVICES.filter((service) => service.fallback !== true);
+const FALLBACK_SERVICES = SERVICES.filter((service) => service.fallback === true);
 
-const FALLBACK_NAMES = ["fastly.jsdelivr.net", "gcore.jsdelivr.net", "testingcf.jsdelivr.net"];
+/** 路径重排式服务的标识，用来验证「只能承载仓库单文件」这条语法约束。 */
+const REARRANGE_SERVICE_IDS = PRIMARY_SERVICES.filter(
+  (service) => service.syntax === "rearrange",
+).map((service) => service.id);
 
 describe("convert 返回的服务目录", () => {
-  it("恰好 8 条主服务，顺序与注册表一致", () => {
+  it("恰好是注册表里的主服务，顺序与注册表一致", () => {
     const { catalog } = convert(REPO_FILE);
 
+    expect(catalog.services.map((entry) => entry.serviceId)).toEqual(
+      PRIMARY_SERVICES.map((service) => service.id),
+    );
     expect(catalog.services.map((entry) => entry.serviceName)).toEqual(
-      EXPECTED_CATALOG.map((entry) => entry.name),
+      PRIMARY_SERVICES.map((service) => service.name),
     );
   });
 
   it("目录里没有任何 jsDelivr 备用入口", () => {
     const { catalog } = convert(REPO_FILE);
+    const serviceIds = catalog.services.map((entry) => entry.serviceId);
 
-    for (const fallback of FALLBACK_NAMES) {
-      expect(catalog.services.map((entry) => entry.serviceName)).not.toContain(fallback);
+    for (const fallback of FALLBACK_SERVICES) {
+      expect(serviceIds).not.toContain(fallback.id);
+      expect(catalog.services.map((entry) => entry.serviceName)).not.toContain(fallback.name);
     }
   });
 
-  it("矩阵列顺序是四类源类型，与 spec 一致", () => {
+  it("矩阵列顺序是四类源类型", () => {
     const { catalog } = convert(REPO_FILE);
 
-    expect(catalog.sourceTypes).toEqual([
-      "repo-file",
-      "gist",
-      "release-asset",
-      "archive",
-    ]);
+    expect(catalog.sourceTypes).toEqual(SOURCE_TYPES);
   });
 
-  it.each(EXPECTED_CATALOG)("$name 的能力集合与 spec 表格一致", ({ name, capabilities }) => {
+  it("路径重排式服务（jsDelivr 家族）只支持仓库单文件", () => {
     const { catalog } = convert(REPO_FILE);
-    const entry = catalog.services.find((candidate) => candidate.serviceName === name);
+    const rearrangeEntries = catalog.services.filter((entry) =>
+      REARRANGE_SERVICE_IDS.includes(entry.serviceId),
+    );
+
+    expect(rearrangeEntries.map((entry) => entry.serviceId)).toEqual(REARRANGE_SERVICE_IDS);
+    for (const entry of rearrangeEntries) {
+      expect(entry.capabilities).toEqual(["repo-file"]);
+    }
+  });
+
+  it("github.chenc.dev 的能力不含 gist，但仍支持其余三类", () => {
+    const { catalog } = convert(REPO_FILE);
+    const entry = catalog.services.find(
+      (candidate) => candidate.serviceName === "github.chenc.dev",
+    );
 
     expect(entry).toBeDefined();
-    expect(entry!.capabilities).toEqual(capabilities);
+    expect(entry!.capabilities).not.toContain("gist");
+    expect(entry!.capabilities).toEqual(["repo-file", "release-asset", "archive"]);
   });
 
-  it("打开备用入口开关后目录不变：矩阵只列 8 个主服务", () => {
+  it("打开备用入口开关后目录不变：矩阵只列主服务", () => {
     const off = convert(REPO_FILE);
     const on = convert(REPO_FILE, { jsdelivrFallbacks: true });
 
@@ -76,13 +83,10 @@ describe("convert 返回的服务目录", () => {
   it("空输入也给出完整目录：矩阵不依赖输入内容", () => {
     const { catalog } = convert("");
 
-    expect(catalog.services).toHaveLength(8);
-    expect(catalog.sourceTypes).toEqual([
-      "repo-file",
-      "gist",
-      "release-asset",
-      "archive",
-    ]);
+    expect(catalog.services.map((entry) => entry.serviceId)).toEqual(
+      PRIMARY_SERVICES.map((service) => service.id),
+    );
+    expect(catalog.sourceTypes).toEqual(SOURCE_TYPES);
   });
 });
 
@@ -116,13 +120,13 @@ describe("结果行的能力标签数据", () => {
   });
 
   it.each(typeCases)(
-    "$name 卡片只出现目录里声称支持该源类型的服务，矩阵与生成地址同源",
+    "$name 卡片出现的 serviceId 集合 === 目录中声称支持该类的 serviceId 集合",
     ({ input, sourceType }) => {
       const result = convert(input);
-      const appearing = result.cards[0].lines.map((line) => line.serviceName);
+      const appearing = result.cards[0].lines.map((line) => line.serviceId);
       const supporting = result.catalog.services
         .filter((entry) => entry.capabilities.includes(sourceType))
-        .map((entry) => entry.serviceName);
+        .map((entry) => entry.serviceId);
 
       expect(appearing).toEqual(supporting);
     },

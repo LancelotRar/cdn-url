@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { convert } from "../src/convert";
+import { SERVICES } from "../src/services";
+import type { SourceType } from "../src/types";
 
 interface RepoFileCase {
   name: string;
@@ -72,7 +74,7 @@ const repoFileCases: RepoFileCase[] = [
 
 describe("convert 仓库单文件源地址", () => {
   it.each(repoFileCases)(
-    "$name 产出一张卡片、八行加速地址",
+    "$name 产出一张卡片，服务顺序与逐行加速地址符合预期",
     ({ input, expectedUrls }) => {
       const result = convert(input);
 
@@ -347,13 +349,16 @@ describe("convert 清洗规则", () => {
   });
 
   it("主机名大小写不敏感", () => {
-    const card = convert(
+    const upper = convert(
       "https://GitHub.com/MetaCubeX/meta-rules-dat/blob/meta/geo/geoip/ad.mrs",
     ).cards[0];
+    const lower = convert(
+      "https://github.com/MetaCubeX/meta-rules-dat/blob/meta/geo/geoip/ad.mrs",
+    ).cards[0];
 
-    expect(card.sourceType).toBe("repo-file");
-    expect(card.error).toBeNull();
-    expect(card.lines).toHaveLength(8);
+    expect(upper.sourceType).toBe("repo-file");
+    expect(upper.error).toBeNull();
+    expect(upper.lines).toEqual(lower.lines);
   });
 });
 
@@ -387,7 +392,19 @@ describe("convert 同一文本混排多类源", () => {
       "tree-directory",
       "non-github",
     ]);
-    expect(result.cards.map((card) => card.lines.length)).toEqual([8, 5, 6, 6, 0, 0]);
+    // 行数不由测试写死：每类源的支持服务数取自注册表（默认不含备用入口）。
+    const supportingLines = (sourceType: SourceType) =>
+      SERVICES.filter(
+        (service) => service.fallback !== true && service.capabilities.includes(sourceType),
+      ).length;
+    expect(result.cards.map((card) => card.lines.length)).toEqual([
+      supportingLines("repo-file"),
+      supportingLines("gist"),
+      supportingLines("release-asset"),
+      supportingLines("archive"),
+      0,
+      0,
+    ]);
   });
 });
 

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { convert } from "../src/convert";
+import { SERVICES } from "../src/services";
+import type { SourceType } from "../src/types";
 
 const REPO_FILE = "https://github.com/MetaCubeX/meta-rules-dat/blob/meta/geo/geoip/ad.mrs";
 const REPO_FILE_RAW =
@@ -32,8 +34,19 @@ describe("convert 批量输入", () => {
       "archive",
       "repo-file",
     ]);
-    expect(result.cards.map((card) => card.lines.length)).toEqual([8, 5, 6, 6, 8]);
     expect(result.cards.map((card) => card.equivalentTo)).toEqual([null, null, null, null, null]);
+    // 行数不由测试写死：每类源的支持服务数取自注册表（默认不含备用入口）。
+    const supportingLines = (sourceType: SourceType) =>
+      SERVICES.filter(
+        (service) => service.fallback !== true && service.capabilities.includes(sourceType),
+      ).length;
+    expect(result.cards.map((card) => card.lines.length)).toEqual([
+      supportingLines("repo-file"),
+      supportingLines("gist"),
+      supportingLines("release-asset"),
+      supportingLines("archive"),
+      supportingLines("repo-file"),
+    ]);
   });
 
   it("空行与首尾空白被忽略，不产出卡片也不报错", () => {
@@ -121,7 +134,10 @@ describe("convert 等价标注", () => {
 
     expect(result.cards).toHaveLength(3);
     expect(result.cards.map((card) => card.equivalentTo)).toEqual([null, 1, 1]);
-    expect(result.cards.map((card) => card.lines.length)).toEqual([8, 8, 8]);
+    expect(result.cards[1].lines).toEqual(result.cards[0].lines);
+    expect(result.cards[2].lines.map((line) => line.serviceId)).toEqual(
+      result.cards[0].lines.map((line) => line.serviceId),
+    );
   });
 });
 
