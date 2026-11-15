@@ -9,3 +9,4 @@ tests/
 AGENTS.md
 GLOSSARY.md
 project-plan.md
+vitest.config.ts
