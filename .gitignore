@@ -1,3 +1,11 @@
 node_modules/
 dist/
 *.local
+
+# 规格、工单、文档与测试只保留在本地
+.scratch/
+docs/
+tests/
+AGENTS.md
+GLOSSARY.md
+project-plan.md
