@@ -24,7 +24,6 @@ if (!input || !cardsElement || !fallbackToggle || !copyAllButton || !matrixEleme
   throw new Error("页面缺少输入框、卡片容器、备用入口开关、复制全部按钮或支持矩阵容器");
 }
 
-
 const cardsContainer = cardsElement;
 const inputElement = input;
 const toggle = fallbackToggle;
