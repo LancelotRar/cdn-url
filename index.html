@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GitHub 加速地址</title>
+  </head>
+  <body>
+    <main class="app">
+      <header class="app-header">
+        <h1>GitHub 加速地址</h1>
+        <p class="app-subtitle">粘贴 GitHub 源地址，一行一条，得到可用的加速地址。</p>
+      </header>
+
+      <label class="input-label" for="source-input">源地址</label>
+      <textarea
+        id="source-input"
+        class="source-input"
+        rows="6"
+        spellcheck="false"
+        placeholder="https://raw.githubusercontent.com/{owner}/{repo}/{ref}/{path}"
+      ></textarea>
+
+      <section id="cards" class="cards" aria-live="polite"></section>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

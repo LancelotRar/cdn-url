@@ -1,0 +1,202 @@
+:root {
+  color-scheme: light dark;
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --border: #d8dde5;
+  --text: #1b1f24;
+  --muted: #5c6672;
+  --accent: #1f6feb;
+  --accent-text: #ffffff;
+  --danger: #b42318;
+  --code-bg: #f0f3f7;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f141a;
+    --surface: #161d25;
+    --border: #2b3542;
+    --text: #e6ebf1;
+    --muted: #9aa7b4;
+    --accent: #4c8dff;
+    --accent-text: #0b1117;
+    --danger: #ff8a80;
+    --code-bg: #10171f;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    "Microsoft YaHei",
+    sans-serif;
+  line-height: 1.5;
+}
+
+.app {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px 16px 64px;
+}
+
+.app-header h1 {
+  margin: 0 0 4px;
+  font-size: 24px;
+}
+
+.app-subtitle {
+  margin: 0 0 24px;
+  color: var(--muted);
+}
+
+.input-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.source-input {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.source-input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.card {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.card-source {
+  margin: 0 0 12px;
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 13px;
+  color: var(--muted);
+  word-break: break-all;
+}
+
+.card-error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 14px;
+}
+
+.card-note {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "service actions"
+    "url actions";
+  gap: 4px 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--code-bg);
+}
+
+.line-service {
+  grid-area: service;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.line-url {
+  grid-area: url;
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 13px;
+  word-break: break-all;
+  user-select: all;
+}
+
+.line-actions {
+  grid-area: actions;
+  display: flex;
+  gap: 8px;
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 56px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--accent);
+  font: inherit;
+  font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.action:hover {
+  border-color: var(--accent);
+}
+
+.action-copy {
+  color: var(--accent-text);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.action-copy:hover {
+  filter: brightness(1.08);
+}
+
+@media (max-width: 560px) {
+  .line {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "service"
+      "url"
+      "actions";
+  }
+}
