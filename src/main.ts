@@ -1,5 +1,6 @@
 import "./styles.css";
 
+import { renderCapabilityTags, renderMatrix } from "./capabilities";
 import { copyText } from "./clipboard";
 import { convert } from "./convert";
 import type { Card, ConversionResult, ConvertOptions, ErrorType, ServiceLine } from "./types";
@@ -16,14 +17,16 @@ const ERROR_TEXT: Record<ErrorType, string> = {
 const input = document.querySelector<HTMLTextAreaElement>("#source-input");
 const cardsElement = document.querySelector<HTMLElement>("#cards");
 const fallbackToggle = document.querySelector<HTMLInputElement>("#jsdelivr-fallbacks");
+const matrixElement = document.querySelector<HTMLElement>("#matrix");
 
-if (!input || !cardsElement || !fallbackToggle) {
-  throw new Error("页面缺少输入框、卡片容器或备用入口开关");
+if (!input || !cardsElement || !fallbackToggle || !matrixElement) {
+  throw new Error("页面缺少输入框、卡片容器、备用入口开关或支持矩阵容器");
 }
 
 const cardsContainer = cardsElement;
 const inputElement = input;
 const toggle = fallbackToggle;
+const matrixContainer = matrixElement;
 
 /** 开关状态是唯一变化来源；切换后立即用当前输入重算，不需要重新粘贴。 */
 function refresh(): void {
@@ -38,6 +41,7 @@ refresh();
 
 function render(result: ConversionResult): void {
   cardsContainer.replaceChildren(...result.cards.map(renderCard));
+  matrixContainer.replaceChildren(renderMatrix(result.catalog));
 }
 
 function renderCard(card: Card): HTMLElement {
@@ -67,14 +71,14 @@ function renderCard(card: Card): HTMLElement {
   const list = document.createElement("ul");
   list.className = "lines";
   for (const line of card.lines) {
-    list.append(renderLine(line));
+    list.append(renderLine(line, card.sourceType));
   }
   article.append(list);
 
   return article;
 }
 
-function renderLine(line: ServiceLine): HTMLElement {
+function renderLine(line: ServiceLine, sourceType: Card["sourceType"]): HTMLElement {
   const item = document.createElement("li");
   item.className = "line";
 
@@ -105,7 +109,7 @@ function renderLine(line: ServiceLine): HTMLElement {
   openLink.textContent = "打开";
 
   actions.append(copyButton, openLink);
-  item.append(service, url, actions);
+  item.append(service, renderCapabilityTags(line, sourceType), url, actions);
 
   return item;
 }
