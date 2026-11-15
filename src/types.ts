@@ -22,10 +22,27 @@ export interface RepoFileTarget {
   path: string;
   /** 归一化后重建的 raw.githubusercontent.com 直链。 */
   directUrl: string;
+  /** 保留的查询串（含 `?`；没有则为空串）。路径重排与直链共用同一查询串。 */
+  query: string;
+}
+
+/** gist 的归一化目标：只有页面地址或 raw 直链，落成不带文件名的 raw 直链。 */
+export interface GistTarget {
+  kind: "gist";
+  user: string;
+  gistId: string;
+  /** 归一化后重建的 gist.githubusercontent.com 直链。 */
+  directUrl: string;
+}
+
+/** release 资产与归档包没有直链形态，以清洗后的原地址透传。 */
+export interface PassthroughTarget {
+  kind: "release-asset" | "archive";
+  directUrl: string;
 }
 
 /** 归一化目标：两种地址语法共用的入参。 */
-export type NormalizedTarget = RepoFileTarget;
+export type NormalizedTarget = RepoFileTarget | GistTarget | PassthroughTarget;
 
 /** 服务注册表里的一条记录。新增服务只加数据。 */
 export interface Service {

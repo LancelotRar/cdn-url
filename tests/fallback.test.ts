@@ -5,12 +5,26 @@ import { convert } from "../src/convert";
 const INPUT = "https://raw.githubusercontent.com/microsoft/TypeScript/main/README.md";
 
 /** 开关关闭时仓库单文件应出现的加速服务（不含 jsDelivr 备用入口）。 */
-const PRIMARY_SERVICES = ["gh-proxy.com", "cdn.jsdelivr.net", "cdn.jsdmirror.cn"];
+const PRIMARY_SERVICES = [
+  "gh-proxy.com",
+  "cdn.jsdelivr.net",
+  "cdn.jsdmirror.cn",
+  "ghproxy.net",
+  "ghfast.top",
+  "ghproxy.icu",
+  "fastgit.cc",
+  "github.chenc.dev",
+];
 
 const PRIMARY_URLS = [
   "https://gh-proxy.com/raw.githubusercontent.com/microsoft/TypeScript/main/README.md",
   "https://cdn.jsdelivr.net/gh/microsoft/TypeScript@main/README.md",
   "https://cdn.jsdmirror.cn/gh/microsoft/TypeScript@main/README.md",
+  "https://ghproxy.net/https://raw.githubusercontent.com/microsoft/TypeScript/main/README.md",
+  "https://ghfast.top/https://raw.githubusercontent.com/microsoft/TypeScript/main/README.md",
+  "https://ghproxy.icu/https://raw.githubusercontent.com/microsoft/TypeScript/main/README.md",
+  "https://fastgit.cc/https://raw.githubusercontent.com/microsoft/TypeScript/main/README.md",
+  "https://github.chenc.dev/raw.githubusercontent.com/microsoft/TypeScript/main/README.md",
 ];
 
 /** 开关打开时追加的三个 jsDelivr 官方备用入口。 */

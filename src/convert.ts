@@ -35,7 +35,7 @@ export function convert(text: string, options: ConvertOptions = {}): ConversionR
       sourceType: normalized.kind,
       error: null,
       equivalentTo: null,
-      note: null,
+      note: normalized.kind === "gist" ? "仅适用于单文件 gist" : null,
       lines: SERVICES.filter(
         (service) =>
           service.capabilities.includes(normalized.kind) &&
