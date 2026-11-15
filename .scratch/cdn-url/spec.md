@@ -66,7 +66,7 @@ Status: ready-for-agent
 
 jsDelivr 的三个官方备用入口（`fastly.jsdelivr.net`、`gcore.jsdelivr.net`、`testingcf.jsdelivr.net`）为同一地址语法的成员，由一个默认关闭的开关统一增删。
 
-**能力集合与源类型的对应**固定为：仓库单文件 → 全部 8 个（含开关打开时的备用入口）；gist 直链 → 7 个（`github.chenc.dev` 不支持，实测 400）；release 资产 → 6 个前缀拼接式；归档包 → 6 个前缀拼接式。
+**能力集合与源类型的对应**固定为：仓库单文件 → 全部 8 个（含开关打开时的备用入口）；gist 直链 → 5 个（两个路径重排式服务无法承载 gist，`github.chenc.dev` 也不支持，实测 400）；release 资产 → 6 个前缀拼接式；归档包 → 6 个前缀拼接式。
 
 **归一化**把源地址分成四类源类型，并产出 `{owner, repo, ref, path}` 四元组或 `{user, gistId}` 标识：
 - 仓库单文件：`blob`、旧式 `/raw/`、`raw.githubusercontent.com` 三种输入统一成四元组，重建为 `raw.githubusercontent.com` 直链。

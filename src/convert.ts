@@ -1,6 +1,14 @@
 import { identityOf, normalize } from "./normalize";
 import { SERVICES, buildAcceleratedUrl } from "./services";
-import type { Card, ConversionResult, ConvertOptions, ServiceCatalog, SourceType } from "./types";
+import type {
+  Card,
+  CatalogEntry,
+  ConversionResult,
+  ConvertOptions,
+  Service,
+  ServiceCatalog,
+  SourceType,
+} from "./types";
 
 /** 四类源类型，按 spec 支持矩阵的列顺序。 */
 const SOURCE_TYPES: readonly SourceType[] = [
@@ -58,10 +66,8 @@ export function convert(text: string, options: ConvertOptions = {}): ConversionR
           service.capabilities.includes(normalized.kind) &&
           (includeFallbacks || service.fallback !== true),
       ).map((service) => ({
-        serviceId: service.id,
-        serviceName: service.name,
+        ...projectService(service),
         url: buildAcceleratedUrl(service, normalized),
-        capabilities: service.capabilities,
       })),
     });
   }
@@ -70,16 +76,24 @@ export function convert(text: string, options: ConvertOptions = {}): ConversionR
 }
 
 /**
+ * 注册表记录到界面数据的共享投影：结果行与目录条目都从这里取值，
+ * 同一次映射只写一遍，避免两处字段各说各话。
+ */
+function projectService(service: Service): CatalogEntry {
+  return {
+    serviceId: service.id,
+    serviceName: service.name,
+    capabilities: service.capabilities,
+  };
+}
+
+/**
  * 服务目录与生成地址共用同一份注册表，只过滤掉备用入口：
- * 矩阵列的是 8 个主服务，所以某条源少了几家时能查到是能力不支持。
+ * 矩阵只列主服务，所以某条源少了几家时能查到是能力不支持。
  */
 function buildCatalog(): ServiceCatalog {
   return {
     sourceTypes: SOURCE_TYPES,
-    services: SERVICES.filter((service) => service.fallback !== true).map((service) => ({
-      serviceId: service.id,
-      serviceName: service.name,
-      capabilities: service.capabilities,
-    })),
+    services: SERVICES.filter((service) => service.fallback !== true).map(projectService),
   };
 }

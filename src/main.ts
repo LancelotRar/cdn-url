@@ -19,9 +19,19 @@ const cardsElement = document.querySelector<HTMLElement>("#cards");
 const fallbackToggle = document.querySelector<HTMLInputElement>("#jsdelivr-fallbacks");
 const copyAllButton = document.querySelector<HTMLButtonElement>("#copy-all");
 const matrixElement = document.querySelector<HTMLElement>("#matrix");
+const matrixCountElement = document.querySelector<HTMLElement>("#matrix-count");
 
-if (!input || !cardsElement || !fallbackToggle || !copyAllButton || !matrixElement) {
-  throw new Error("页面缺少输入框、卡片容器、备用入口开关、复制全部按钮或支持矩阵容器");
+if (
+  !input ||
+  !cardsElement ||
+  !fallbackToggle ||
+  !copyAllButton ||
+  !matrixElement ||
+  !matrixCountElement
+) {
+  throw new Error(
+    "页面缺少输入框、卡片容器、备用入口开关、复制全部按钮、支持矩阵容器或矩阵数量提示",
+  );
 }
 
 const cardsContainer = cardsElement;
@@ -29,6 +39,7 @@ const inputElement = input;
 const toggle = fallbackToggle;
 const copyAll = copyAllButton;
 const matrixContainer = matrixElement;
+const matrixCount = matrixCountElement;
 
 /** 当前渲染结果；页面级复制按钮只读取它，不重新计算。 */
 let currentResult: ConversionResult | null = null;
@@ -55,6 +66,7 @@ function render(result: ConversionResult): void {
   currentResult = result;
   cardsContainer.replaceChildren(...result.cards.map(renderCard));
   copyAll.disabled = allUrls(result).length === 0;
+  matrixCount.textContent = `${result.catalog.services.length} 个主服务 × ${result.catalog.sourceTypes.length} 类源类型。`;
   matrixContainer.replaceChildren(renderMatrix(result.catalog));
 }
 

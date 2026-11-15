@@ -34,6 +34,14 @@ function segmentsOf(url: URL): string[] {
 }
 
 /**
+ * 取路径的前 `count` 段。段数不足时返回 null，调用方统一按 unrecognized 拒绝，
+ * 这样各处只需判断一次 null，而不是逐段比较 undefined。
+ */
+function leadingSegments(segments: readonly string[], count: number): string[] | null {
+  return segments.length < count ? null : segments.slice(0, count);
+}
+
+/**
  * 清洗查询串：丢弃 `?raw=true`，其余查询串按原样保留（含 `?`）。
  */
 function cleanQuery(url: URL): string {
@@ -84,15 +92,12 @@ export function normalize(source: string): Normalized {
  */
 function normalizeRawFile(url: URL): Normalized {
   const segments = segmentsOf(url);
-  if (segments.length < 4) {
+  const head = leadingSegments(segments, 4);
+  if (head === null) {
     return rejected("unrecognized");
   }
 
-  const [owner, repo] = segments;
-  if (owner === undefined || repo === undefined) {
-    return rejected("unrecognized");
-  }
-
+  const [owner, repo] = head;
   return repoFileTarget(owner, repo, segments.slice(2), url);
 }
 
@@ -136,10 +141,13 @@ function repoFileTarget(
  */
 function normalizeGitHubPage(url: URL): Normalized {
   const segments = segmentsOf(url);
-  const [owner, repo, kind] = segments;
-  if (owner === undefined || repo === undefined) {
+  const head = leadingSegments(segments, 2);
+  if (head === null) {
     return rejected("unrecognized");
   }
+
+  const [owner, repo] = head;
+  const kind = segments[2];
 
   if (segments.length === 2) {
     return rejected("repo-home");
@@ -191,9 +199,13 @@ function passthroughTarget(
  * 一律落成不带文件名的 `/raw`：不反推锚点、不枚举文件、不调 GitHub API。
  */
 function normalizeGistRaw(url: URL): Normalized {
-  const segments = segmentsOf(url);
-  const [user, gistId, raw] = segments;
-  if (user === undefined || gistId === undefined || raw !== "raw") {
+  const head = leadingSegments(segmentsOf(url), 3);
+  if (head === null) {
+    return rejected("unrecognized");
+  }
+
+  const [user, gistId, raw] = head;
+  if (raw !== "raw") {
     return rejected("unrecognized");
   }
 
@@ -205,15 +217,12 @@ function normalizeGistRaw(url: URL): Normalized {
  */
 function normalizeGistPage(url: URL): Normalized {
   const segments = segmentsOf(url);
-  if (segments.length !== 2) {
+  const head = leadingSegments(segments, 2);
+  if (head === null || segments.length !== 2) {
     return rejected("unrecognized");
   }
 
-  const [user, gistId] = segments;
-  if (user === undefined || gistId === undefined) {
-    return rejected("unrecognized");
-  }
-
+  const [user, gistId] = head;
   return gistTarget(user, gistId, url);
 }
 

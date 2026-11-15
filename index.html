@@ -21,6 +21,50 @@
         placeholder="https://raw.githubusercontent.com/{owner}/{repo}/{ref}/{path}"
       ></textarea>
 
+      <details class="format-help">
+        <summary>支持的 6 类源地址与示例</summary>
+        <dl class="format-list">
+          <div class="format-item">
+            <dt>仓库单文件 · blob 页</dt>
+            <dd>
+              <code>https://github.com/MetaCubeX/meta-rules-dat/blob/meta/geo/geoip/ad.mrs</code>
+            </dd>
+          </div>
+          <div class="format-item">
+            <dt>直链 · raw</dt>
+            <dd>
+              <code>https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/ad.mrs</code>
+            </dd>
+            <dd class="format-detail">
+              也接受旧式 <code>/{owner}/{repo}/raw/{ref}/{path}</code> 与去掉 <code>refs/heads/</code> 的写法。
+            </dd>
+          </div>
+          <div class="format-item">
+            <dt>gist 页面</dt>
+            <dd><code>https://gist.github.com/{user}/{id}</code></dd>
+            <dd class="format-detail">页面地址会被落成 gist 直链，只取 gist 的第一个文件。</dd>
+          </div>
+          <div class="format-item">
+            <dt>gist 直链 · raw</dt>
+            <dd>
+              <code>https://gist.githubusercontent.com/mn9ri4jdm5/fd2e299390c88720b4cb026b2795126a/raw/53489_qctld.md</code>
+            </dd>
+          </div>
+          <div class="format-item">
+            <dt>release 资产</dt>
+            <dd><code>https://github.com/{owner}/{repo}/releases/download/{tag}/{file}</code></dd>
+          </div>
+          <div class="format-item">
+            <dt>归档包</dt>
+            <dd><code>https://github.com/{owner}/{repo}/archive/refs/heads/{ref}.zip</code></dd>
+          </div>
+        </dl>
+        <p class="format-note">
+          <code>tree</code> 目录页、<code>api.github.com</code>、<code>codeload.github.com</code>
+          与仓库首页不支持。
+        </p>
+      </details>
+
       <label class="toggle" for="jsdelivr-fallbacks">
         <input id="jsdelivr-fallbacks" class="toggle-input" type="checkbox" />
         <span>显示 jsDelivr 备用入口（fastly / gcore / testingcf）</span>
@@ -37,7 +81,8 @@
       <section class="matrix-section" aria-labelledby="matrix-title">
         <h2 id="matrix-title" class="matrix-title">服务支持矩阵</h2>
         <p class="matrix-hint">
-          8 个主服务 × 4 类源类型。jsDelivr 的三个备用入口与 cdn.jsdelivr.net 能力相同，不单独列出。
+          <span id="matrix-count"></span>
+          jsDelivr 的三个备用入口与 cdn.jsdelivr.net 能力相同，不单独列出。
           ✓ 支持，— 不支持；窄屏可左右滑动表格查看全部列。
         </p>
         <div id="matrix"></div>

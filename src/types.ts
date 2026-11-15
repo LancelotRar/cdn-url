@@ -81,7 +81,7 @@ export interface CatalogEntry {
 
 /**
  * 渲染支持矩阵所需的服务目录。
- * 只含主服务（不含 jsDelivr 备用入口），因此矩阵固定 8 行 × 4 列。
+ * 只含主服务（不含 jsDelivr 备用入口），行数由注册表决定，列数即源类型数。
  */
 export interface ServiceCatalog {
   /** 矩阵列顺序：四类源类型。 */
