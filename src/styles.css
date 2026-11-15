@@ -68,6 +68,11 @@
     --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.5);
     --shadow-2: 0 18px 44px -22px rgba(0, 0, 0, 0.85);
   }
+
+  /* 深色下把分段控件的滑块提亮一档，否则与轨道几乎同色。 */
+  .rail-glider {
+    background: var(--surface-3);
+  }
 }
 
 * {
@@ -372,20 +377,96 @@ body::before {
   outline: none;
 }
 
-.help-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 28px;
-  align-items: flex-start;
-  margin-top: 10px;
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
 }
 
-.help-row > details {
+.rail {
   min-width: 0;
 }
 
-.format-help,
-.matrix-details {
+.rail-card {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+}
+
+.rail-tabs {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  margin: 10px;
+  padding: 3px;
+  border-radius: var(--radius-block);
+  background: var(--surface-2);
+}
+
+.rail-tabs[hidden] {
+  display: none;
+}
+
+.rail-glider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+  transition:
+    transform 200ms var(--ease),
+    width 200ms var(--ease),
+    height 200ms var(--ease);
+}
+
+.rail-tab {
+  position: relative;
+  z-index: 1;
+  height: 30px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: color 120ms var(--ease);
+}
+
+.rail-tab:hover {
+  color: var(--text);
+}
+
+.rail-tab[aria-selected="true"] {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.rail-panel + .rail-panel {
+  border-top: 1px solid var(--border);
+}
+
+/* 窄屏用可折叠块，宽屏把标题让给分段控件。 */
+.rail-panel-title {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  padding: 12px 16px;
+  color: var(--text);
+  font-size: 12.5px;
+  font-weight: 600;
+  list-style: none;
+  cursor: pointer;
+}
+
+.rail-content {
+  padding: 0 16px 16px;
   color: var(--muted);
   font-size: 12.5px;
 }
@@ -424,15 +505,20 @@ details[open] > summary::before {
 }
 
 .format-list {
-  margin: 10px 0 0;
-  padding: 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-block);
-  background: var(--surface);
+  margin: 0;
+  padding: 0;
+}
+
+.format-item {
+  padding: 10px 0;
+}
+
+.format-item:first-child {
+  padding-top: 0;
 }
 
 .format-item + .format-item {
-  margin-top: 12px;
+  border-top: 1px solid var(--border);
 }
 
 .format-item dt {
@@ -452,7 +538,7 @@ details[open] > summary::before {
   background: var(--code-bg);
   color: var(--text);
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 11.5px;
   word-break: break-all;
 }
 
@@ -462,12 +548,14 @@ details[open] > summary::before {
 
 .format-note {
   margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
 }
 
-.matrix-details .matrix-hint {
-  margin: 10px 0 0;
+.matrix-hint {
+  margin: 0 0 10px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11.5px;
 }
 
 .result {
@@ -518,6 +606,19 @@ details[open] > summary::before {
   font-size: 15px;
   font-weight: 600;
   letter-spacing: -0.01em;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.section-count {
+  color: var(--muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
 }
 
 .groups {
@@ -610,13 +711,38 @@ details[open] > summary::before {
 .group-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 2px;
   padding: 0 16px 12px;
 }
 
+/* 主机入口是一个分段控件：滑块是装饰，选中语义仍由 aria-selected 表达。 */
+.tab-track {
+  position: relative;
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-2);
+}
+
+.tab-glider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  transition:
+    transform 200ms var(--ease),
+    width 200ms var(--ease),
+    height 200ms var(--ease);
+}
+
 .host-tab {
+  position: relative;
+  z-index: 1;
   padding: 4px 12px;
-  border: 1px solid transparent;
+  border: 0;
   border-radius: 999px;
   background: transparent;
   color: var(--muted);
@@ -624,19 +750,15 @@ details[open] > summary::before {
   font-size: 12px;
   line-height: 1.6;
   cursor: pointer;
-  transition:
-    background-color 120ms var(--ease),
-    color 120ms var(--ease);
+  transition: color 120ms var(--ease);
 }
 
 .host-tab:hover {
-  background: var(--surface-2);
   color: var(--text);
 }
 
-/* 选中态同时靠底色、字重与颜色表达，不只依赖颜色。 */
+/* 选中态同时靠滑块、字重与颜色表达，不只依赖颜色。 */
 .host-tab[aria-selected="true"] {
-  background: var(--accent);
   color: var(--on-accent);
   font-weight: 600;
 }
@@ -747,12 +869,27 @@ details[open] > summary::before {
   color: var(--on-accent);
 }
 
+/* 复制结果用同一颗按钮表达，不新开一层弹窗。 */
+.action.is-copied {
+  border-color: var(--ok);
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+
+.action.is-failed {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
 .rejections {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin: 8px 0 0;
+  overflow: hidden;
+  margin: 0;
   padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
   list-style: none;
 }
 
@@ -763,10 +900,11 @@ details[open] > summary::before {
     "line error";
   grid-template-columns: auto minmax(0, 1fr);
   gap: 2px 12px;
-  padding: 12px 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-block);
-  background: var(--surface);
+  padding: 12px 16px;
+}
+
+.rejection + .rejection {
+  border-top: 1px solid var(--border);
 }
 
 .rejection-line {
@@ -801,7 +939,8 @@ details[open] > summary::before {
 .matrix {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12.5px;
+  table-layout: fixed;
+  font-size: 12px;
 }
 
 .matrix caption {
@@ -813,16 +952,21 @@ details[open] > summary::before {
 
 .matrix th,
 .matrix td {
-  padding: 8px 10px;
+  padding: 7px 4px;
   border-top: 1px solid var(--border);
 }
 
 .matrix thead th {
   color: var(--muted);
-  font-size: 11.5px;
+  font-size: 10px;
   font-weight: 600;
+  line-height: 1.4;
   text-align: center;
   vertical-align: bottom;
+}
+
+.matrix thead th:first-child {
+  width: 38%;
 }
 
 .matrix thead th:first-child,
@@ -831,9 +975,11 @@ details[open] > summary::before {
 }
 
 .matrix tbody th {
+  overflow: hidden;
   font-family: var(--font-mono);
-  font-size: 11.5px;
+  font-size: 10.5px;
   font-weight: 500;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -854,6 +1000,25 @@ details[open] > summary::before {
   background: var(--surface-2);
 }
 
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 20;
+  max-width: calc(100vw - 48px);
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-block);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12.5px;
+  box-shadow: var(--shadow-2);
+}
+
+.toast[hidden] {
+  display: none;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -864,6 +1029,37 @@ details[open] > summary::before {
   clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
+}
+
+@media (min-width: 1080px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 28px;
+  }
+
+  .rail {
+    position: sticky;
+    top: 24px;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .rail-panel {
+    border-top: 1px solid var(--border);
+  }
+
+  .rail-panel[hidden] {
+    display: none;
+  }
+
+  .rail-panel-title {
+    display: none;
+  }
+
+  .rail-content {
+    padding-top: 16px;
+  }
 }
 
 @media (max-width: 560px) {

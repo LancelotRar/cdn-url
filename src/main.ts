@@ -26,6 +26,8 @@ const input = document.querySelector<HTMLTextAreaElement>("#source-input");
 const summaryElement = document.querySelector<HTMLElement>("#summary");
 const rejectionsSection = document.querySelector<HTMLElement>("#rejections-section");
 const rejectionsElement = document.querySelector<HTMLElement>("#rejections");
+const rejectionsCountElement = document.querySelector<HTMLElement>("#rejections-count");
+const toastElement = document.querySelector<HTMLElement>("#toast");
 const groupsElement = document.querySelector<HTMLElement>("#groups");
 const matrixElement = document.querySelector<HTMLElement>("#matrix");
 const matrixCountElement = document.querySelector<HTMLElement>("#matrix-count");
@@ -37,12 +39,18 @@ const pasteButton = document.querySelector<HTMLButtonElement>("#paste-input");
 const composerHint = document.querySelector<HTMLElement>("#composer-hint");
 const emptyFillButton = document.querySelector<HTMLButtonElement>("#empty-fill");
 const emptyFormatsButton = document.querySelector<HTMLButtonElement>("#empty-formats");
+const railTabsElement = document.querySelector<HTMLElement>(".rail-tabs");
+const railGliderElement = document.querySelector<HTMLElement>(".rail-glider");
+const railTabElements = Array.from(document.querySelectorAll<HTMLButtonElement>(".rail-tab"));
+const railPanelElements = Array.from(document.querySelectorAll<HTMLDetailsElement>(".rail-panel"));
 
 if (
   !input ||
   !summaryElement ||
   !rejectionsSection ||
   !rejectionsElement ||
+  !rejectionsCountElement ||
+  !toastElement ||
   !groupsElement ||
   !matrixElement ||
   !matrixCountElement ||
@@ -53,10 +61,14 @@ if (
   !pasteButton ||
   !composerHint ||
   !emptyFillButton ||
-  !emptyFormatsButton
+  !emptyFormatsButton ||
+  !railTabsElement ||
+  !railGliderElement ||
+  railTabElements.length !== 2 ||
+  railPanelElements.length !== 2
 ) {
   throw new Error(
-    "页面缺少输入框、摘要、无法处理区、分组容器、支持矩阵容器、输入卡工具条或空状态",
+    "页面缺少输入框、摘要、无法处理区、分组容器、支持矩阵容器、输入卡工具条、空状态或参考区",
   );
 }
 
@@ -64,6 +76,8 @@ const inputElement = input;
 const summary = summaryElement;
 const rejectionsSectionElement = rejectionsSection;
 const rejectionsContainer = rejectionsElement;
+const rejectionsCount = rejectionsCountElement;
+const toast = toastElement;
 const groupsContainer = groupsElement;
 const matrixContainer = matrixElement;
 const matrixCount = matrixCountElement;
@@ -75,6 +89,75 @@ const pasteInputButton = pasteButton;
 const hintElement = composerHint;
 const emptyFill = emptyFillButton;
 const emptyFormats = emptyFormatsButton;
+const railTabsBar = railTabsElement;
+const railGlider = railGliderElement;
+const railTabs = railTabElements;
+const railPanels = railPanelElements;
+
+/** 1080px 是参考区从分段控件切回可折叠块的断点，与样式表保持一致。 */
+const railMedia = window.matchMedia("(min-width: 1080px)");
+let railIndex = 0;
+
+function positionRailGlider(): void {
+  const tab = railTabs[railIndex];
+  if (!tab || !tab.isConnected) {
+    return;
+  }
+  railGlider.style.width = `${tab.offsetWidth}px`;
+  railGlider.style.height = `${tab.offsetHeight}px`;
+  railGlider.style.transform = `translate(${tab.offsetLeft}px, ${tab.offsetTop}px)`;
+}
+
+/** 宽屏：分段控件 + 单面板；窄屏：两块可折叠、标题可见。 */
+function syncRailMode(): void {
+  const isWide = railMedia.matches;
+  railTabsBar.hidden = !isWide;
+
+  railPanels.forEach((panel, index) => {
+    const body = panel.querySelector<HTMLElement>(".rail-content");
+    if (isWide) {
+      panel.open = true;
+      panel.hidden = index !== railIndex;
+      body?.setAttribute("role", "tabpanel");
+      body?.setAttribute("aria-labelledby", railTabs[index].id);
+    } else {
+      panel.hidden = false;
+      body?.removeAttribute("role");
+      body?.removeAttribute("aria-labelledby");
+    }
+  });
+
+  if (isWide) {
+    positionRailGlider();
+    return;
+  }
+
+  // 窄屏把两块默认收起：参考信息在结果下方，不该一上来就占满屏幕。
+  for (const panel of railPanels) {
+    panel.open = false;
+  }
+}
+
+function selectRail(index: number, moveFocus: boolean): void {
+  railIndex = index;
+
+  railTabs.forEach((tab, tabIndex) => {
+    const selected = tabIndex === index;
+    tab.setAttribute("aria-selected", selected ? "true" : "false");
+    tab.tabIndex = selected ? 0 : -1;
+  });
+
+  if (railMedia.matches) {
+    railPanels.forEach((panel, panelIndex) => {
+      panel.hidden = panelIndex !== index;
+    });
+    positionRailGlider();
+  }
+
+  if (moveFocus) {
+    railTabs[index]?.focus();
+  }
+}
 
 /** 示例源地址：仓库单文件、gist 直链、release 资产各一条，覆盖三种归一化分支。 */
 const EXAMPLE_SOURCES = [
@@ -87,6 +170,28 @@ const DEFAULT_HINT = "一行一条";
 
 /** 已出现过的服务分组：用于只给新出现的分组播一次入场动画。 */
 let shownGroupIds = new Set<string>();
+
+/** 当前这批分组里的选项卡滑块；每次渲染重建，不跨渲染持有已移除的节点。 */
+interface TabLayout {
+  glider: HTMLElement;
+  tabs: readonly HTMLButtonElement[];
+  selectedIndex: () => number;
+}
+
+const tabLayouts: TabLayout[] = [];
+
+/** 把滑块量到当前选中的选项卡上：切换、缩放、字体变化都走这里。 */
+function positionTabGliders(): void {
+  for (const layout of tabLayouts) {
+    const tab = layout.tabs[layout.selectedIndex()];
+    if (!tab || !tab.isConnected) {
+      continue;
+    }
+    layout.glider.style.width = `${tab.offsetWidth}px`;
+    layout.glider.style.height = `${tab.offsetHeight}px`;
+    layout.glider.style.transform = `translate(${tab.offsetLeft}px, ${tab.offsetTop}px)`;
+  }
+}
 
 /** 已选主机：按服务分组保存在页面内存，输入变化不重置，整页刷新才回主入口。 */
 const selectedVariantByGroup = new Map<string, string>();
@@ -161,6 +266,7 @@ async function pasteFromClipboard(): Promise<void> {
 
 input.addEventListener("input", refresh);
 window.addEventListener("resize", autoGrow);
+window.addEventListener("resize", positionTabGliders);
 
 clearInputButton.addEventListener("click", () => {
   inputElement.value = "";
@@ -174,10 +280,30 @@ pasteInputButton.addEventListener("click", () => {
   void pasteFromClipboard();
 });
 
-/** 空状态里的「支持的 6 类地址」把参考区滚进视野，不切换页面状态。 */
+/**
+ * 空状态里的「支持的 6 类地址」：宽屏切到「支持的地址」面板，
+ * 窄屏直接展开第一块，然后把参考区滚进视野。
+ */
 emptyFormats.addEventListener("click", () => {
-  document.querySelector(".help-row")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  if (railMedia.matches) {
+    selectRail(0, false);
+  } else {
+    railPanels[0].open = true;
+  }
+  railPanels[0].scrollIntoView({ behavior: "smooth", block: "center" });
 });
+
+railTabs.forEach((tab, index) => {
+  tab.addEventListener("click", () => selectRail(index, false));
+});
+railTabsBar.addEventListener("keydown", (event) =>
+  handleTabKeydown(event, railTabs, selectRail),
+);
+railMedia.addEventListener("change", syncRailMode);
+window.addEventListener("resize", positionRailGlider);
+
+syncRailMode();
+requestAnimationFrame(positionRailGlider);
 
 refresh();
 
@@ -185,7 +311,12 @@ function render(result: ConversionResult): void {
   renderSummary(result.summary);
 
   rejectionsSectionElement.hidden = result.rejections.length === 0;
+  rejectionsCount.textContent =
+    result.rejections.length === 0 ? "" : `${result.rejections.length} 条`;
   rejectionsContainer.replaceChildren(...result.rejections.map(renderRejection));
+
+  // 选项卡滑块只服务当前这批分组：每次渲染重建登记表，避免记住已移除的节点。
+  tabLayouts.length = 0;
 
   // 只为本次新出现的分组安排入场延迟：输入变化导致的重渲染不会让整页反复闪。
   const nextGroupIds = new Set(result.groups.map((group) => group.serviceId));
@@ -201,6 +332,9 @@ function render(result: ConversionResult): void {
     }),
   );
   shownGroupIds = nextGroupIds;
+
+  // 刚插入的节点还没有布局，等一帧再量滑块位置。
+  requestAnimationFrame(positionTabGliders);
 
   matrixCount.textContent = `${result.catalog.services.length} 个主服务 × ${result.catalog.sourceTypes.length} 类源类型。`;
   matrixContainer.replaceChildren(renderMatrix(result.catalog));
@@ -345,6 +479,7 @@ function renderGroup(group: ServiceGroup, enterDelayMs: number | null): HTMLElem
       tab.tabIndex = selected ? 0 : -1;
     });
     panel.setAttribute("aria-labelledby", tabs[selectedIndex].id);
+    positionTabGliders();
   }
 
   function select(index: number, moveFocus: boolean): void {
@@ -366,10 +501,18 @@ function renderGroup(group: ServiceGroup, enterDelayMs: number | null): HTMLElem
   });
 
   if (hasTabs) {
-    const tablist = document.createElement("div");
-    tablist.className = "group-tabs";
-    tablist.setAttribute("role", "tablist");
-    tablist.setAttribute("aria-label", `${group.serviceName} 主机入口`);
+    const tabsRow = document.createElement("div");
+    tabsRow.className = "group-tabs";
+
+    const track = document.createElement("div");
+    track.className = "tab-track";
+    track.setAttribute("role", "tablist");
+    track.setAttribute("aria-label", `${group.serviceName} 主机入口`);
+
+    // 滑块是纯装饰：位置由测量决定，可访问性语义仍由选项卡自身的 aria 表达。
+    const glider = document.createElement("span");
+    glider.className = "tab-glider";
+    glider.setAttribute("aria-hidden", "true");
 
     tabs = group.variants.map((variant, index) => {
       const tab = document.createElement("button");
@@ -386,10 +529,12 @@ function renderGroup(group: ServiceGroup, enterDelayMs: number | null): HTMLElem
       return tab;
     });
 
-    tablist.append(...tabs);
-    tablist.addEventListener("keydown", (event) => handleTabKeydown(event, tabs, select));
+    track.append(glider, ...tabs);
+    track.addEventListener("keydown", (event) => handleTabKeydown(event, tabs, select));
+    tabsRow.append(track);
+    section.append(tabsRow);
 
-    section.append(tablist);
+    tabLayouts.push({ glider, tabs, selectedIndex: () => selectedIndex });
   }
 
   section.append(panel);
@@ -532,15 +677,35 @@ function renderRow(row: ResultRow): HTMLElement {
   return item;
 }
 
+let toastTimer = 0;
+
+/** 失败提示只有一处，出现在左下角并自动消失，不与按钮内的失败态叠加。 */
+function showToast(message: string): void {
+  toast.textContent = message;
+  toast.hidden = false;
+  window.clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(() => {
+    toast.hidden = true;
+  }, 2600);
+}
+
 async function handleCopy(
   button: HTMLButtonElement,
   text: string,
   idleLabel: () => string,
 ): Promise<void> {
   const copied = await copyText(text);
-  button.textContent = copied ? "已复制" : "复制失败";
+  button.textContent = copied ? "已复制 ✓" : "复制失败";
+  button.classList.toggle("is-copied", copied);
+  button.classList.toggle("is-failed", !copied);
+
+  if (!copied) {
+    showToast("复制失败：浏览器拒绝了剪贴板写入，请手动选中地址复制。");
+  }
+
   window.setTimeout(() => {
     // 空闲文案用回调：组级按钮跟随当前主机，反馈结束时按当时入口重算，而不是写回旧文案。
     button.textContent = idleLabel();
+    button.classList.remove("is-copied", "is-failed");
   }, 1500);
 }
