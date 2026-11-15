@@ -38,7 +38,7 @@ export function convert(text: string): ConversionResult {
         (service) => ({
           serviceId: service.id,
           serviceName: service.name,
-          url: buildAcceleratedUrl(service, normalized.directUrl),
+          url: buildAcceleratedUrl(service, normalized),
           capabilities: service.capabilities,
         }),
       ),
