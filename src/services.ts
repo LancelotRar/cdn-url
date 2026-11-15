@@ -70,6 +70,7 @@ export const SERVICES: readonly Service[] = [
     capabilities: ["repo-file", "release-asset", "archive"],
   },
   // jsDelivr 官方备用入口：同一套路径重排语法，只有主机名不同；由开关统一增删。
+  // `fallbackOf` 指向所属的主服务分组，因此它们不单独成组，只作为该组的变体。
   {
     id: "jsdelivr-fastly",
     name: "fastly.jsdelivr.net",
@@ -78,6 +79,7 @@ export const SERVICES: readonly Service[] = [
     stripScheme: false,
     capabilities: ["repo-file"],
     fallback: true,
+    fallbackOf: "jsdelivr",
   },
   {
     id: "jsdelivr-gcore",
@@ -87,6 +89,7 @@ export const SERVICES: readonly Service[] = [
     stripScheme: false,
     capabilities: ["repo-file"],
     fallback: true,
+    fallbackOf: "jsdelivr",
   },
   {
     id: "jsdelivr-testingcf",
@@ -96,6 +99,7 @@ export const SERVICES: readonly Service[] = [
     stripScheme: false,
     capabilities: ["repo-file"],
     fallback: true,
+    fallbackOf: "jsdelivr",
   },
 ];
 
