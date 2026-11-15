@@ -83,6 +83,23 @@ body {
   outline-offset: 1px;
 }
 
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.toggle-input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
 .cards {
   display: flex;
   flex-direction: column;
