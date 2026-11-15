@@ -6,12 +6,33 @@
     <title>GitHub 加速地址</title>
   </head>
   <body>
-    <main class="app">
-      <header class="app-header">
-        <h1>GitHub 加速地址</h1>
-        <p class="app-subtitle">粘贴 GitHub 源地址，一行一条，得到可用的加速地址。</p>
+    <div class="shell">
+      <header class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none">
+            <path
+              d="M16 3.4 27 9.7v12.6L16 28.6 5 22.3V9.7Z"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M12.5 19.5 19.5 12.5M14.3 12.5h5.2v5.2"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </span>
+        <div class="brand-copy">
+          <h1>GitHub 加速地址</h1>
+          <p>粘贴 GitHub 源地址，一行一条，得到可用的加速地址。</p>
+        </div>
+        <span class="brand-badge">纯前端 · 无上传</span>
       </header>
 
+      <main class="app">
       <label class="input-label" for="source-input">源地址</label>
       <textarea
         id="source-input"
@@ -87,7 +108,8 @@
 
         <section id="groups" class="groups" aria-label="服务分组"></section>
       </div>
-    </main>
+      </main>
+    </div>
 
     <script type="module" src="/src/main.ts"></script>
   </body>
