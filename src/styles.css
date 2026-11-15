@@ -35,6 +35,10 @@
   --radius-block: 10px;
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 
+  /* 行内按钮的宽度与间距是同一套刻度：组级复制按钮按「复制 + 打开」的总宽对齐。 */
+  --action-w: 52px;
+  --action-gap: 6px;
+
   --font-sans:
     system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
   --font-mono: ui-monospace, "Cascadia Code", "SFMono-Regular", Consolas, monospace;
@@ -359,11 +363,6 @@ body::before {
     box-shadow 120ms var(--ease);
 }
 
-.source-input::placeholder {
-  color: var(--muted);
-  opacity: 0.9;
-}
-
 .source-input:hover {
   border-color: var(--border-strong);
 }
@@ -686,6 +685,12 @@ details[open] > summary::before {
   line-height: 1.5;
 }
 
+.caps-lead {
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
 .cap {
   padding: 1px 8px;
   border: 1px solid var(--border);
@@ -704,8 +709,8 @@ details[open] > summary::before {
 }
 
 .group-tools .action-copy {
-  /* 固定最小宽度：复制成功的短文案不会把这一排挤得跳动。 */
-  min-width: 84px;
+  /* 与下方「复制 + 打开」两个按钮的总宽对齐，八个分组的按钮长度一致。 */
+  min-width: calc(var(--action-w) * 2 + var(--action-gap));
 }
 
 .group-count {
@@ -828,7 +833,7 @@ details[open] > summary::before {
 .row-actions {
   grid-area: actions;
   display: flex;
-  gap: 6px;
+  gap: var(--action-gap);
 }
 
 /* 行 hover 已经用底色表达指向，按钮只做轻微强调，不压暗主操作。 */
@@ -840,7 +845,7 @@ details[open] > summary::before {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 52px;
+  min-width: var(--action-w);
   height: 30px;
   padding: 0 11px;
   border: 1px solid var(--border);
@@ -1071,6 +1076,15 @@ details[open] > summary::before {
 @media (max-width: 560px) {
   .shell {
     padding: 20px 16px 72px;
+  }
+
+  /* 窄屏收紧能力标签，四项通常能排在同一行，避免最后一枚标签单独换行。 */
+  .group-caps {
+    gap: 4px;
+  }
+
+  .cap {
+    padding: 1px 6px;
   }
 
   .brand {
