@@ -17,16 +17,21 @@ const ERROR_TEXT: Record<ErrorType, string> = {
 const input = document.querySelector<HTMLTextAreaElement>("#source-input");
 const cardsElement = document.querySelector<HTMLElement>("#cards");
 const fallbackToggle = document.querySelector<HTMLInputElement>("#jsdelivr-fallbacks");
+const copyAllButton = document.querySelector<HTMLButtonElement>("#copy-all");
 const matrixElement = document.querySelector<HTMLElement>("#matrix");
 
-if (!input || !cardsElement || !fallbackToggle || !matrixElement) {
-  throw new Error("页面缺少输入框、卡片容器、备用入口开关或支持矩阵容器");
+if (!input || !cardsElement || !fallbackToggle || !copyAllButton || !matrixElement) {
+  throw new Error("页面缺少输入框、卡片容器、备用入口开关、复制全部按钮或支持矩阵容器");
 }
 
 const cardsContainer = cardsElement;
 const inputElement = input;
 const toggle = fallbackToggle;
+const copyAll = copyAllButton;
 const matrixContainer = matrixElement;
+
+/** 当前渲染结果；页面级复制按钮只读取它，不重新计算。 */
+let currentResult: ConversionResult | null = null;
 
 /** 开关状态是唯一变化来源；切换后立即用当前输入重算，不需要重新粘贴。 */
 function refresh(): void {
@@ -36,22 +41,53 @@ function refresh(): void {
 
 input.addEventListener("input", refresh);
 toggle.addEventListener("change", refresh);
+copyAll.addEventListener("click", () => {
+  const urls = currentResult === null ? [] : allUrls(currentResult);
+  if (urls.length === 0) {
+    return;
+  }
+  void handleCopy(copyAll, urls.join("\n"), "复制全部");
+});
 
 refresh();
 
 function render(result: ConversionResult): void {
+  currentResult = result;
   cardsContainer.replaceChildren(...result.cards.map(renderCard));
+  copyAll.disabled = allUrls(result).length === 0;
   matrixContainer.replaceChildren(renderMatrix(result.catalog));
+}
+
+/** 按卡片顺序、卡片内的界面顺序摊平所有加速地址。 */
+function allUrls(result: ConversionResult): string[] {
+  return result.cards.flatMap((card) => card.lines.map((line) => line.url));
 }
 
 function renderCard(card: Card): HTMLElement {
   const article = document.createElement("article");
   article.className = "card";
 
+  const head = document.createElement("div");
+  head.className = "card-head";
+
   const source = document.createElement("p");
   source.className = "card-source";
   source.textContent = card.source;
-  article.append(source);
+  head.append(source);
+
+  const urls = card.lines.map((line) => line.url);
+  if (urls.length > 0) {
+    const copyGroup = document.createElement("button");
+    copyGroup.type = "button";
+    copyGroup.className = "action action-copy";
+    copyGroup.textContent = "复制本组";
+    copyGroup.addEventListener("click", () => {
+      void handleCopy(copyGroup, urls.join("\n"), "复制本组");
+    });
+    head.append(copyGroup);
+  }
+
+  article.append(head);
 
   if (card.error !== null) {
     const error = document.createElement("p");
@@ -59,6 +95,13 @@ function renderCard(card: Card): HTMLElement {
     error.textContent = ERROR_TEXT[card.error];
     article.append(error);
     return article;
+  }
+
+  if (card.equivalentTo !== null) {
+    const equivalent = document.createElement("p");
+    equivalent.className = "card-equivalent";
+    equivalent.textContent = `与第 ${card.equivalentTo} 条等价`;
+    article.append(equivalent);
   }
 
   if (card.note !== null) {
@@ -114,10 +157,14 @@ function renderLine(line: ServiceLine, sourceType: Card["sourceType"]): HTMLElem
   return item;
 }
 
-async function handleCopy(button: HTMLButtonElement, text: string): Promise<void> {
+async function handleCopy(
+  button: HTMLButtonElement,
+  text: string,
+  idleLabel = "复制",
+): Promise<void> {
   const copied = await copyText(text);
   button.textContent = copied ? "已复制" : "复制失败";
   window.setTimeout(() => {
-    button.textContent = "复制";
+    button.textContent = idleLabel;
   }, 1500);
 }

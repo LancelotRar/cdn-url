@@ -109,11 +109,29 @@ body {
   margin-top: 24px;
 }
 
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
 .card {
   padding: 16px;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--surface);
+}
+
+.card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.card-head .action {
+  flex: none;
 }
 
 .card-source {
@@ -124,6 +142,11 @@ body {
   word-break: break-all;
 }
 
+.card-head .card-source {
+  margin: 0;
+  min-width: 0;
+}
+
 .card-error {
   margin: 0;
   color: var(--danger);
@@ -131,6 +154,12 @@ body {
 }
 
 .card-note {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.card-equivalent {
   margin: 0 0 12px;
   color: var(--muted);
   font-size: 13px;
@@ -238,6 +267,19 @@ body {
 
 .action-copy:hover {
   filter: brightness(1.08);
+}
+
+.action:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.action:disabled:hover {
+  border-color: var(--border);
+}
+
+.action-copy:disabled:hover {
+  filter: none;
 }
 
 @media (max-width: 560px) {

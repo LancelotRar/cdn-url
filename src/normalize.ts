@@ -3,6 +3,22 @@ import type { ErrorType, NormalizedTarget } from "./types";
 /** 归一化结果：要么是可以构造加速地址的源，要么是一条拒绝原因。 */
 export type Normalized = NormalizedTarget | { kind: "error"; error: ErrorType };
 
+/**
+ * 归一化目标的稳定标识，用于等价判定：标识相同即视为同一条源。
+ * 仓库单文件用 `{owner, repo, ref, path}` 四元组，gist 用 `{user, gistId}`；
+ * 两者都不含查询串，否则同一文件换个 token 就会被误判为不同源。
+ * release 资产与归档包没有更简的标识，取其归一化后的原始地址。
+ */
+export function identityOf(target: NormalizedTarget): string {
+  if (target.kind === "repo-file") {
+    return `repo-file:${target.owner}/${target.repo}/${target.ref}/${target.path}`;
+  }
+  if (target.kind === "gist") {
+    return `gist:${target.user}/${target.gistId}`;
+  }
+  return `${target.kind}:${target.directUrl}`;
+}
+
 const RAW_HOST = "raw.githubusercontent.com";
 const GIST_HOST = "gist.github.com";
 const GIST_RAW_HOST = "gist.githubusercontent.com";
