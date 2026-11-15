@@ -1,12 +1,14 @@
 import { normalize } from "./normalize";
 import { SERVICES, buildAcceleratedUrl } from "./services";
-import type { Card, ConversionResult } from "./types";
+import type { Card, ConversionResult, ConvertOptions } from "./types";
 
 /**
  * 唯一接缝：把输入框的原始文本转成渲染所需的全部内容。
  * 界面层只渲染这里返回的结果，不含任何判断逻辑。
+ * 开关项默认关闭：备用入口只有在被显式打开时才参与生成。
  */
-export function convert(text: string): ConversionResult {
+export function convert(text: string, options: ConvertOptions = {}): ConversionResult {
+  const includeFallbacks = options.jsdelivrFallbacks === true;
   const cards: Card[] = [];
 
   for (const rawLine of text.split(/\r?\n/)) {
@@ -34,14 +36,16 @@ export function convert(text: string): ConversionResult {
       error: null,
       equivalentTo: null,
       note: null,
-      lines: SERVICES.filter((service) => service.capabilities.includes(normalized.kind)).map(
-        (service) => ({
-          serviceId: service.id,
-          serviceName: service.name,
-          url: buildAcceleratedUrl(service, normalized),
-          capabilities: service.capabilities,
-        }),
-      ),
+      lines: SERVICES.filter(
+        (service) =>
+          service.capabilities.includes(normalized.kind) &&
+          (includeFallbacks || service.fallback !== true),
+      ).map((service) => ({
+        serviceId: service.id,
+        serviceName: service.name,
+        url: buildAcceleratedUrl(service, normalized),
+        capabilities: service.capabilities,
+      })),
     });
   }
 

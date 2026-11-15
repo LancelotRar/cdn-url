@@ -2,7 +2,7 @@ import "./styles.css";
 
 import { copyText } from "./clipboard";
 import { convert } from "./convert";
-import type { Card, ConversionResult, ErrorType, ServiceLine } from "./types";
+import type { Card, ConversionResult, ConvertOptions, ErrorType, ServiceLine } from "./types";
 
 const ERROR_TEXT: Record<ErrorType, string> = {
   "tree-directory": "这是 tree 目录页，不支持。",
@@ -15,18 +15,26 @@ const ERROR_TEXT: Record<ErrorType, string> = {
 
 const input = document.querySelector<HTMLTextAreaElement>("#source-input");
 const cardsElement = document.querySelector<HTMLElement>("#cards");
+const fallbackToggle = document.querySelector<HTMLInputElement>("#jsdelivr-fallbacks");
 
-if (!input || !cardsElement) {
-  throw new Error("页面缺少输入框或卡片容器");
+if (!input || !cardsElement || !fallbackToggle) {
+  throw new Error("页面缺少输入框、卡片容器或备用入口开关");
 }
 
 const cardsContainer = cardsElement;
+const inputElement = input;
+const toggle = fallbackToggle;
 
-input.addEventListener("input", () => {
-  render(convert(input.value));
-});
+/** 开关状态是唯一变化来源；切换后立即用当前输入重算，不需要重新粘贴。 */
+function refresh(): void {
+  const options: ConvertOptions = { jsdelivrFallbacks: toggle.checked };
+  render(convert(inputElement.value, options));
+}
 
-render(convert(input.value));
+input.addEventListener("input", refresh);
+toggle.addEventListener("change", refresh);
+
+refresh();
 
 function render(result: ConversionResult): void {
   cardsContainer.replaceChildren(...result.cards.map(renderCard));
