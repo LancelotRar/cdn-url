@@ -799,12 +799,6 @@ details[open] > summary::before {
   min-width: calc(var(--action-w) * 2 + var(--action-gap));
 }
 
-.group-count {
-  color: var(--muted);
-  font-size: 13px;
-  white-space: nowrap;
-}
-
 .group-tabs {
   display: flex;
   flex-wrap: wrap;
@@ -1193,7 +1187,7 @@ details[open] > summary::before {
 
   .group-tools {
     width: 100%;
-    justify-content: space-between;
+    justify-content: flex-end;
   }
 }
 

@@ -453,14 +453,11 @@ function renderGroup(group: ServiceGroup, enterDelayMs: number | null): HTMLElem
   const tools = document.createElement("div");
   tools.className = "group-tools";
 
-  const count = document.createElement("span");
-  count.className = "group-count";
-
   const copyGroup = document.createElement("button");
   copyGroup.type = "button";
   copyGroup.className = "action action-copy";
 
-  tools.append(count, copyGroup);
+  tools.append(copyGroup);
   head.append(identity, tools);
   section.append(head);
 
@@ -485,10 +482,9 @@ function renderGroup(group: ServiceGroup, enterDelayMs: number | null): HTMLElem
   const currentVariant = (): ServiceVariant => group.variants[selectedIndex];
   const idleCopyLabel = (): string => GROUP_COPY_LABEL;
 
-  // 原地同步：只重画这一组的行、计数、复制按钮与选项卡状态，焦点留在被按的 tab 上。
+  // 原地同步：只重画这一组的行、复制按钮与选项卡状态，焦点留在被按的 tab 上。
   function sync(): void {
     const variant = currentVariant();
-    count.textContent = `${variant.rows.length} 行`;
     copyGroup.textContent = idleCopyLabel();
     list.replaceChildren(...variant.rows.map(renderRow));
 
