@@ -240,8 +240,7 @@ body::before {
 .composer-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   margin-bottom: 12px;
 }
 
@@ -270,7 +269,7 @@ body::before {
 .composer-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 8px;
 }
 
 .composer-hint {
@@ -299,16 +298,6 @@ body::before {
     color 120ms var(--ease);
 }
 
-.btn-ghost {
-  color: var(--muted);
-}
-
-.btn-ghost:hover {
-  border-color: var(--border);
-  background: var(--surface-2);
-  color: var(--text);
-}
-
 .btn-soft {
   border-color: var(--border);
   background: var(--surface-2);
@@ -318,18 +307,6 @@ body::before {
 .btn-soft:hover {
   border-color: var(--border-strong);
   background: var(--surface-3);
-}
-
-.btn-primary {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: var(--on-accent);
-  font-weight: 550;
-}
-
-.btn-primary:hover {
-  border-color: var(--accent-hover);
-  background: var(--accent-hover);
 }
 
 .empty-state {

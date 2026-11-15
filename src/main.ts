@@ -176,8 +176,6 @@ function setTheme(theme: "light" | "dark"): void {
   syncThemeToggle();
 }
 
-const DEFAULT_HINT = "一行一条";
-
 /**
  * 组级复制按钮的固定文案。
  * 不拼主机短名：主机名长短不一，会让同一排按钮宽度参差；当前主机由选项卡表达。
@@ -239,12 +237,14 @@ function autoGrow(): void {
 
 let hintTimer = 0;
 
-/** 工具条提示复用同一个位置，3 秒后回到默认文案，不弹模态。 */
+/** 工具条提示平时不占位，只在出现一次性消息时短暂显示，3 秒后收起。 */
 function showHint(text: string): void {
   hintElement.textContent = text;
+  hintElement.hidden = false;
   window.clearTimeout(hintTimer);
   hintTimer = window.setTimeout(() => {
-    hintElement.textContent = DEFAULT_HINT;
+    hintElement.hidden = true;
+    hintElement.textContent = "";
   }, 3000);
 }
 
