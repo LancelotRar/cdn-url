@@ -1161,7 +1161,9 @@ details[open] > summary::before {
   font-size: 11px;
   font-weight: 600;
   line-height: 1.4;
-  vertical-align: bottom;
+  /* 表头里有一行与两行混排（「归档包」放得下，「仓库单文件」放不下），
+     统一顶对齐，让每一列的首行落在同一条水平线上。 */
+  vertical-align: top;
   /* 优先在空格处换行，避免「gist 直链」被拆成「gist 直 / 链」。 */
   word-break: keep-all;
   overflow-wrap: anywhere;
