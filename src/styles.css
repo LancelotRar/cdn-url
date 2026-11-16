@@ -1070,19 +1070,6 @@ details[open] > summary::before {
 
 /* 组级与行内按钮共用同一套胶囊材质与字重；组级只是把宽度对齐到行内两枚按钮的总宽。 */
 
-/* 复制结果用同一颗按钮表达，不新开一层弹窗。 */
-.action.is-copied {
-  border-color: var(--ok);
-  background: var(--ok-soft);
-  color: var(--ok);
-}
-
-.action.is-failed {
-  border-color: var(--danger);
-  background: var(--danger-soft);
-  color: var(--danger);
-}
-
 /* 无法处理区块与分组卡同属卡面，但只留内高光、不带上浮投影，视觉权重低于分组。 */
 .rejections {
   overflow: hidden;
@@ -1200,19 +1187,33 @@ details[open] > summary::before {
   background: color-mix(in srgb, var(--text) 5%, transparent);
 }
 
+/* 顶部居中的横幅提示：成功绿、失败红；不拦截点击，免得挡住页首开关。 */
 .toast {
   position: fixed;
-  bottom: var(--space-24);
-  left: var(--space-24);
+  top: var(--space-24);
+  left: 50%;
   z-index: 20;
   max-width: calc(100vw - 48px);
-  padding: var(--space-12) var(--space-16);
-  border: 1px solid var(--border);
+  padding: var(--space-8) var(--space-16);
+  border: 1px solid transparent;
   border-radius: var(--radius-block);
-  background: var(--surface);
-  color: var(--text);
   font-size: 13.5px;
+  font-weight: 600;
+  pointer-events: none;
+  transform: translateX(-50%);
   box-shadow: var(--shadow-2);
+}
+
+.toast[data-tone="success"] {
+  border-color: color-mix(in srgb, var(--ok) 25%, transparent);
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+
+.toast[data-tone="error"] {
+  border-color: color-mix(in srgb, var(--danger) 25%, transparent);
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 
 .toast[hidden] {

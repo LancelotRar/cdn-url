@@ -517,7 +517,7 @@ function renderGroup(group: ServiceGroup, enterDelayMs: number | null): HTMLElem
 
   copyGroup.addEventListener("click", () => {
     const urls = currentVariant().rows.map((row) => row.url);
-    void handleCopy(copyGroup, urls.join("\n"), idleCopyLabel);
+    void copyWithFeedback(urls.join("\n"), "整组复制成功");
   });
 
   if (hasTabs) {
@@ -662,7 +662,7 @@ function renderRow(row: ResultRow): HTMLElement {
   copyButton.className = "action action-copy";
   copyButton.textContent = "复制";
   copyButton.addEventListener("click", () => {
-    void handleCopy(copyButton, row.url, () => "复制");
+    void copyWithFeedback(row.url, "单条复制成功");
   });
 
   const openLink = document.createElement("a");
@@ -685,8 +685,12 @@ function renderRow(row: ResultRow): HTMLElement {
 let toastTimer = 0;
 
 /** 失败提示只有一处，出现在左下角并自动消失，不与按钮内的失败态叠加。 */
-function showToast(message: string): void {
+type ToastTone = "success" | "error";
+
+/** 页面顶部的横幅提示：成功是绿色，失败是红色，同一位置、同一形状。 */
+function showToast(message: string, tone: ToastTone = "success"): void {
   toast.textContent = message;
+  toast.dataset.tone = tone;
   toast.hidden = false;
   window.clearTimeout(toastTimer);
   toastTimer = window.setTimeout(() => {
@@ -694,23 +698,14 @@ function showToast(message: string): void {
   }, 2600);
 }
 
-async function handleCopy(
-  button: HTMLButtonElement,
-  text: string,
-  idleLabel: () => string,
-): Promise<void> {
+/** 复制并在页面顶部给一条横幅：成功绿、失败红；按钮本身不换文案也不换样式。 */
+async function copyWithFeedback(text: string, successMessage: string): Promise<void> {
   const copied = await copyText(text);
-  button.textContent = copied ? "已复制 ✓" : "复制失败";
-  button.classList.toggle("is-copied", copied);
-  button.classList.toggle("is-failed", !copied);
 
-  if (!copied) {
-    showToast("复制失败：浏览器拒绝了剪贴板写入，请手动选中地址复制。");
+  if (copied) {
+    showToast(successMessage, "success");
+    return;
   }
 
-  window.setTimeout(() => {
-    // 空闲文案用回调：组级按钮跟随当前主机，反馈结束时按当时入口重算，而不是写回旧文案。
-    button.textContent = idleLabel();
-    button.classList.remove("is-copied", "is-failed");
-  }, 1500);
+  showToast("复制失败：浏览器拒绝了剪贴板写入，请手动选中地址复制。", "error");
 }
