@@ -148,12 +148,23 @@ export interface ConversionResult {
   catalog: ServiceCatalog;
 }
 
-/** 服务目录里的一条记录：渲染能力标签与支持矩阵所需的全部信息。 */
-export type CatalogEntry = ServiceDescriptor;
+/** 备用入口在支持矩阵里的子行信息。 */
+export interface CatalogFallback extends ServiceDescriptor {
+  /** 主机短名（cdn / fastly / gcore / testingcf），与分组里的主机选项卡用同一份取值。 */
+  shortName: string;
+}
+
+/**
+ * 服务目录里的一条记录：渲染能力标签与支持矩阵所需的全部信息。
+ * `fallbacks` 是这条主服务名下的备用入口，在矩阵里作为子行列在主服务之后。
+ */
+export type CatalogEntry = ServiceDescriptor & {
+  fallbacks: readonly CatalogFallback[];
+};
 
 /**
  * 渲染支持矩阵所需的服务目录。
- * 只含主服务（不含 jsDelivr 备用入口），行数由注册表决定，列数即源类型数。
+ * 行由主服务构成，每条主服务之后可以带若干备用入口子行；列数即源类型数。
  */
 export interface ServiceCatalog {
   /** 矩阵列顺序：四类源类型。 */

@@ -1,7 +1,8 @@
 import { identityOf, labelOf, normalize } from "./normalize";
-import { SERVICES, buildAcceleratedUrl } from "./services";
+import { SERVICES, buildAcceleratedUrl, hostShortName } from "./services";
 import type {
   CatalogEntry,
+  CatalogFallback,
   ConversionResult,
   ConversionSummary,
   NormalizedTarget,
@@ -86,8 +87,8 @@ export function convert(text: string): ConversionResult {
 }
 
 /**
- * 服务目录与组头标签共用同一份注册表，只过滤掉备用入口：
- * 矩阵按主服务列出，所以某条源少了几家时能查到是能力不支持。
+ * 服务目录与组头标签共用同一份注册表。
+ * 矩阵按主服务成行，备用入口挂在所属主服务的 `fallbacks` 下作为子行。
  */
 function buildCatalog(): ServiceCatalog {
   return {
@@ -97,6 +98,14 @@ function buildCatalog(): ServiceCatalog {
         serviceId: service.id,
         serviceName: service.name,
         capabilities: service.capabilities,
+        fallbacks: SERVICES.filter((candidate) => candidate.fallbackOf === service.id).map(
+          (fallback): CatalogFallback => ({
+            serviceId: fallback.id,
+            serviceName: fallback.name,
+            capabilities: fallback.capabilities,
+            shortName: hostShortName(fallback.endpoint),
+          }),
+        ),
       }),
     ),
   };

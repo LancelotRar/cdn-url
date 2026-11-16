@@ -3,6 +3,7 @@ import "./styles.css";
 import { renderCapabilityTags, renderMatrix } from "./capabilities";
 import { copyText } from "./clipboard";
 import { convert } from "./convert";
+import { hostName, hostShortName } from "./services";
 import type {
   ConversionResult,
   ConversionSummary,
@@ -620,16 +621,6 @@ function groupPanelId(serviceId: string): string {
 
 function groupHostTabId(serviceId: string, variantServiceId: string): string {
   return `group-${serviceId}-tab-${variantServiceId}`;
-}
-
-/** 端点的主机名：放进悬浮提示与读屏文本。 */
-function hostName(endpoint: string): string {
-  return new URL(endpoint).hostname;
-}
-
-/** 主机短名取首段（cdn / fastly / gcore / testingcf），窄屏也放得下。 */
-function hostShortName(endpoint: string): string {
-  return hostName(endpoint).split(".")[0];
 }
 
 function renderRow(row: ResultRow): HTMLElement {

@@ -115,3 +115,13 @@ export function buildAcceleratedUrl(service: Service, target: NormalizedTarget):
 
   return `${service.endpoint}/gh/${target.owner}/${target.repo}@${target.ref}/${target.path}${target.query}`;
 }
+
+/** 端点的主机名：放进悬浮提示与读屏文本。 */
+export function hostName(endpoint: string): string {
+  return new URL(endpoint).hostname;
+}
+
+/** 主机短名取首段（cdn / fastly / gcore / testingcf），窄屏也放得下。 */
+export function hostShortName(endpoint: string): string {
+  return hostName(endpoint).split(".")[0];
+}

@@ -1182,6 +1182,18 @@ details[open] > summary::before {
   white-space: nowrap;
 }
 
+/* 备用入口是主服务的子行：缩进 + 弱化，视觉上不另计为一条加速服务。 */
+.matrix tbody tr.matrix-fallback th {
+  padding-left: var(--space-16);
+  color: var(--muted);
+}
+
+.matrix tbody tr.matrix-fallback th::before {
+  content: "↳";
+  margin-right: var(--space-4);
+  color: var(--faint);
+}
+
 .matrix-cell {
   text-align: center;
 }
