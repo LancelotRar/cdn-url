@@ -876,19 +876,11 @@ details[open] > summary::before {
   line-height: 1.5;
 }
 
-/* 「可加速」引导词用标签面的中性变体：5% 前景底 + 8% 前景边 + 弱化文字。 */
-.caps-lead {
-  padding: var(--space-1) var(--space-6);
-  border: 1px solid var(--tag-neutral-line);
-  border-radius: var(--radius-tag);
-  background: var(--tag-neutral-face);
-  color: var(--muted);
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-/* 能力标签是标签面：语义色 12% 底 + 25% 描边 + 语义色文字，圆角矩形不是胶囊。 */
+/* 能力标签是标签面：语义绿 12% 底 + 25% 描边 + 绿色文字，圆角矩形不是胶囊。 */
 .cap {
+  /* 组头标签统一用成功色，和参考站「开源 / 免费」那类标签同一族。 */
+  --tag-tint: var(--ok);
+
   padding: var(--space-2) 9px;
   border: 1px solid color-mix(in srgb, var(--tag-tint) var(--tag-line-alpha), transparent);
   border-radius: var(--radius-tag);
@@ -1051,6 +1043,8 @@ details[open] > summary::before {
   color: var(--accent);
   font: inherit;
   font-size: 13.5px;
+  /* `font` 简写会把字重重置为继承值；按钮与链接共用同一档字重，复制和打开不能一粗一细。 */
+  font-weight: 550;
   text-decoration: none;
   cursor: pointer;
   transition:
@@ -1064,10 +1058,7 @@ details[open] > summary::before {
   background: color-mix(in srgb, var(--text) 9%, transparent);
 }
 
-/* 组级与行内按钮共用同一套胶囊材质；组级只是把宽度对齐到行内两枚按钮的总宽。 */
-.action-copy {
-  font-weight: 550;
-}
+/* 组级与行内按钮共用同一套胶囊材质与字重；组级只是把宽度对齐到行内两枚按钮的总宽。 */
 
 /* 复制结果用同一颗按钮表达，不新开一层弹窗。 */
 .action.is-copied {

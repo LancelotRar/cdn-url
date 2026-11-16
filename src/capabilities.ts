@@ -9,17 +9,12 @@ const SOURCE_TYPE_LABELS: Record<SourceType, string> = {
 };
 
 /**
- * 组头的能力标签：先给一句「可加速」引导，再列出该服务支持的源类型。
+ * 组头的能力标签：列出该服务支持的源类型。
  * 标签集合沿用 `convert` 输出目录的口径，与页面底部支持矩阵同源。
  */
 export function renderCapabilityTags(capabilities: readonly SourceType[]): HTMLElement {
   const container = document.createElement("span");
   container.className = "group-caps";
-
-  const lead = document.createElement("span");
-  lead.className = "caps-lead";
-  lead.textContent = "可加速";
-  container.append(lead);
 
   for (const capability of capabilities) {
     container.append(chip(SOURCE_TYPE_LABELS[capability], "cap"));
