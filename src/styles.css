@@ -10,7 +10,6 @@
   --bg: #f4f5f8;
   --surface: #ffffff;
   --surface-2: #f2f3f7;
-  --surface-3: #e9ebf1;
   --border: rgba(17, 17, 19, 0.12);
   --border-strong: rgba(17, 17, 19, 0.26);
   --text: #1d1d1f;
@@ -29,7 +28,6 @@
   --ok-soft: rgba(15, 122, 61, 0.12);
 
   --code-bg: rgba(17, 17, 19, 0.05);
-  --shadow-1: 0 1px 2px rgba(17, 17, 19, 0.06);
   --shadow-2: 0 14px 40px -20px rgba(17, 17, 19, 0.28);
 
   /* 页面底三段径向渐变：左上偏冷、右上偏紫、底部偏深。 */
@@ -100,7 +98,6 @@
   --bg: #09090d;
   --surface: #16161c;
   --surface-2: #101014;
-  --surface-3: #1b1b21;
   --border: rgba(255, 255, 255, 0.12);
   --border-strong: rgba(255, 255, 255, 0.24);
   --text: #f4f4f5;
@@ -119,7 +116,6 @@
   --ok-soft: rgba(74, 222, 128, 0.12);
 
   --code-bg: rgba(255, 255, 255, 0.06);
-  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.5);
   --shadow-2: 0 18px 44px -22px rgba(0, 0, 0, 0.85);
 
   /* 页面底三段径向渐变：左上偏冷、右上偏紫、底部偏深。 */
@@ -537,7 +533,7 @@ body {
 }
 
 .rail-tab:hover {
-  color: var(--text);
+  color: var(--accent-hover);
 }
 
 /* 选中态靠实心滑块 + 前景色对比表达，不靠描边或淡色底。 */
@@ -954,7 +950,7 @@ details[open] > summary::before {
 }
 
 .host-tab:hover {
-  color: var(--text);
+  color: var(--accent-hover);
 }
 
 /* 选中态同时靠滑块、字重与颜色表达，不只依赖颜色。 */
