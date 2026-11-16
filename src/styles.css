@@ -787,17 +787,28 @@ details[open] > summary::before {
   gap: var(--space-18);
 }
 
+/* 分组卡与输入卡共用同一组卡面 token，悬停时整块抬起。 */
 .group {
   overflow: hidden;
-  border: 1px solid var(--border);
+  border: 1px solid var(--card-line);
   border-radius: var(--radius-card);
-  background: var(--surface);
-  box-shadow: var(--shadow-1);
+  background: var(--card-face);
+  box-shadow: var(--card-shadow);
+  transition:
+    transform 150ms var(--ease),
+    box-shadow 150ms var(--ease);
+}
+
+/* 与参考站一致：上浮 3px、极轻微放大，投影换成带主色光环的版本。 */
+.group:hover {
+  transform: translateY(-3px) scale(1.004);
+  box-shadow: var(--card-shadow-hover);
 }
 
 /* 只给本次新出现的分组播一次入场；总时长由延迟上限压在 240ms 内。 */
+/* 填充用 backwards：延迟期间保持隐藏，播完就把 transform 交还给悬停规则。 */
 .group.is-entering {
-  animation: group-enter 160ms var(--ease) both;
+  animation: group-enter 160ms var(--ease) backwards;
   animation-delay: var(--enter-delay, 0ms);
 }
 
@@ -845,18 +856,24 @@ details[open] > summary::before {
   line-height: 1.5;
 }
 
+/* 「可加速」引导词用标签面的中性变体：5% 前景底 + 8% 前景边 + 弱化文字。 */
 .caps-lead {
+  padding: var(--space-1) var(--space-6);
+  border: 1px solid var(--tag-neutral-line);
+  border-radius: var(--radius-tag);
+  background: var(--tag-neutral-face);
   color: var(--muted);
   font-size: 12px;
   white-space: nowrap;
 }
 
+/* 能力标签是标签面：语义色 12% 底 + 25% 描边 + 语义色文字，圆角矩形不是胶囊。 */
 .cap {
   padding: var(--space-2) 9px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--surface-2);
-  color: var(--muted);
+  border: 1px solid color-mix(in srgb, var(--tag-tint) var(--tag-line-alpha), transparent);
+  border-radius: var(--radius-tag);
+  background: color-mix(in srgb, var(--tag-tint) var(--tag-face-alpha), transparent);
+  color: var(--tag-tint);
   font-size: 12px;
   white-space: nowrap;
 }
@@ -885,11 +902,12 @@ details[open] > summary::before {
   display: inline-flex;
   gap: var(--space-2);
   padding: var(--space-3);
-  border: 1px solid var(--border);
+  border: 1px solid var(--card-line);
   border-radius: 999px;
-  background: var(--surface-2);
+  background: color-mix(in srgb, var(--text) 5%, transparent);
 }
 
+/* 滑块就是选中态的实心底：主色实心 + 999 胶囊，几何仍由渲染模块测量写入。 */
 .tab-glider {
   position: absolute;
   top: 0;
@@ -897,6 +915,7 @@ details[open] > summary::before {
   z-index: 0;
   border-radius: 999px;
   background: var(--accent);
+  box-shadow: 0 2px 12px -4px color-mix(in srgb, var(--accent) 60%, transparent);
   transition:
     transform 200ms var(--ease),
     width 200ms var(--ease),
@@ -931,7 +950,7 @@ details[open] > summary::before {
 .rows {
   margin: 0;
   padding: 0;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--card-line);
   list-style: none;
 }
 
@@ -949,14 +968,16 @@ details[open] > summary::before {
 }
 
 .row + .row {
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--card-line);
 }
 
+/* 行悬停用中性叠加，不改变卡面本身的明度关系。 */
 .row:hover,
 .row:focus-within {
-  background: var(--surface-2);
+  background: color-mix(in srgb, var(--text) 5%, transparent);
 }
 
+/* 源地址标签是次级信息：等宽显示但对比低于加速地址，让 URL 先被看到。 */
 .row-label {
   grid-area: label;
   overflow: hidden;
@@ -967,6 +988,7 @@ details[open] > summary::before {
   white-space: nowrap;
 }
 
+/* 加速地址是每行的主角：等宽、可整行断行，既不截断也不横向溢出。 */
 .row-url {
   grid-area: url;
   font-family: var(--font-mono);
@@ -992,9 +1014,10 @@ details[open] > summary::before {
 
 /* 行 hover 已经用底色表达指向，按钮只做轻微强调，不压暗主操作。 */
 .row:hover .action-open {
-  border-color: var(--border-strong);
+  border-color: var(--accent-line);
 }
 
+/* 所有动作按钮同一套材质：中性半透明底 + hairline + 主色文字 + 999 胶囊。 */
 .action {
   display: inline-flex;
   align-items: center;
@@ -1003,9 +1026,9 @@ details[open] > summary::before {
   height: 34px;
   padding: 0 var(--space-12);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
-  color: var(--text);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 5%, transparent);
+  color: var(--accent);
   font: inherit;
   font-size: 13.5px;
   text-decoration: none;
@@ -1017,21 +1040,13 @@ details[open] > summary::before {
 }
 
 .action:hover {
-  border-color: var(--border-strong);
-  background: var(--surface-2);
+  border-color: var(--accent-line);
+  background: color-mix(in srgb, var(--text) 9%, transparent);
 }
 
+/* 组级与行内按钮共用同一套胶囊材质；组级只是把宽度对齐到行内两枚按钮的总宽。 */
 .action-copy {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: var(--on-accent);
   font-weight: 550;
-}
-
-.action-copy:hover {
-  border-color: var(--accent-hover);
-  background: var(--accent-hover);
-  color: var(--on-accent);
 }
 
 /* 复制结果用同一颗按钮表达，不新开一层弹窗。 */
@@ -1047,15 +1062,21 @@ details[open] > summary::before {
   color: var(--danger);
 }
 
+/* 无法处理区块与分组卡同属卡面，但只留内高光、不带上浮投影，视觉权重低于分组。 */
 .rejections {
   overflow: hidden;
   margin: 0;
   padding: 0;
-  border: 1px solid var(--border);
+  border: 1px solid var(--card-line);
   border-radius: var(--radius-card);
-  background: var(--surface);
-  box-shadow: var(--shadow-1);
+  background: var(--card-face);
+  box-shadow: var(--card-highlight);
   list-style: none;
+}
+
+/* 这个区块的标题退到弱化文字色，避免与分组名争层级。 */
+.rejections-section .section-title {
+  color: var(--muted);
 }
 
 .rejection {
@@ -1069,7 +1090,7 @@ details[open] > summary::before {
 }
 
 .rejection + .rejection {
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--card-line);
 }
 
 .rejection-line {
@@ -1276,5 +1297,10 @@ details[open] > summary::before {
 
   .group.is-entering {
     animation: none !important;
+  }
+
+  /* 悬停上浮是纯装饰位移：减少动态效果时直接取消，只留下投影变化。 */
+  .group:hover {
+    transform: none;
   }
 }
