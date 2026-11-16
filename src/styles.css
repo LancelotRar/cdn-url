@@ -376,7 +376,7 @@ body {
   border-color: var(--border);
   background: color-mix(in srgb, var(--text) 5%, transparent);
   color: var(--accent);
-  border-radius: 999px;
+  border-radius: var(--radius-block);
 }
 
 .btn-soft:hover {
@@ -1045,7 +1045,8 @@ details[open] > summary::before {
   height: 34px;
   padding: 0 var(--space-12);
   border: 1px solid var(--border);
-  border-radius: 999px;
+  /* 按钮不做胶囊，与内嵌块同圆角。 */
+  border-radius: var(--radius-block);
   background: color-mix(in srgb, var(--text) 5%, transparent);
   color: var(--accent);
   font: inherit;
