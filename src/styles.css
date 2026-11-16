@@ -1231,7 +1231,9 @@ details[open] > summary::before {
     top: var(--space-24);
     max-height: calc(100vh - 48px);
     overflow-y: auto;
-    overscroll-behavior: contain;
+    /* 右栏自身可以滚，但滚到头之后要让滚轮交给页面；
+       `contain` 会在右栏底部形成一段“滚轮失灵”的死区。 */
+    overscroll-behavior-y: auto;
   }
 
   .rail-panel {
