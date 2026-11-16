@@ -7,11 +7,61 @@ import type { NormalizedTarget, Service } from "./types";
 export const SERVICES: readonly Service[] = [
   {
     id: "gh-proxy",
+    name: "gh-proxy.org",
+    endpoint: "https://gh-proxy.org",
+    syntax: "prefix",
+    stripScheme: true,
+    capabilities: ["repo-file", "gist", "release-asset", "archive"],
+    tabLabel: "org",
+  },
+  // gh-proxy 转换页自述的线路清单：主站之后依次是 v4、v6、cdn、axisnow。
+  // 六个入口只有主机名不同，语法、协议前缀处理与能力集合完全一致。
+  {
+    id: "gh-proxy-v4",
+    name: "v4.gh-proxy.org",
+    endpoint: "https://v4.gh-proxy.org",
+    syntax: "prefix",
+    stripScheme: true,
+    capabilities: ["repo-file", "gist", "release-asset", "archive"],
+    fallbackOf: "gh-proxy",
+  },
+  {
+    id: "gh-proxy-v6",
+    name: "v6.gh-proxy.org",
+    endpoint: "https://v6.gh-proxy.org",
+    syntax: "prefix",
+    stripScheme: true,
+    capabilities: ["repo-file", "gist", "release-asset", "archive"],
+    fallbackOf: "gh-proxy",
+  },
+  {
+    id: "gh-proxy-cdn",
+    name: "cdn.gh-proxy.org",
+    endpoint: "https://cdn.gh-proxy.org",
+    syntax: "prefix",
+    stripScheme: true,
+    capabilities: ["repo-file", "gist", "release-asset", "archive"],
+    fallbackOf: "gh-proxy",
+  },
+  {
+    id: "gh-proxy-axisnow",
+    name: "axisnow.gh-proxy.org",
+    endpoint: "https://axisnow.gh-proxy.org",
+    syntax: "prefix",
+    stripScheme: true,
+    capabilities: ["repo-file", "gist", "release-asset", "archive"],
+    fallbackOf: "gh-proxy",
+  },
+  // 历史登记端点，不在 gh-proxy 的线路清单里；保留为备用入口，存量地址不失效。
+  {
+    id: "gh-proxy-com",
     name: "gh-proxy.com",
     endpoint: "https://gh-proxy.com",
     syntax: "prefix",
     stripScheme: true,
     capabilities: ["repo-file", "gist", "release-asset", "archive"],
+    fallbackOf: "gh-proxy",
+    tabLabel: "com",
   },
   {
     id: "jsdelivr",
