@@ -481,12 +481,13 @@ body {
   min-width: 0;
 }
 
+/* 参考卡与分组卡、输入卡共用同一套卡面配方。 */
 .rail-card {
   overflow: hidden;
-  border: 1px solid var(--border);
+  border: 1px solid var(--card-line);
   border-radius: var(--radius-card);
-  background: var(--surface);
-  box-shadow: var(--shadow-1);
+  background: var(--card-face);
+  box-shadow: var(--card-shadow);
 }
 
 .rail-tabs {
@@ -496,22 +497,24 @@ body {
   gap: var(--space-2);
   margin: var(--space-12);
   padding: var(--space-4);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-block);
-  background: var(--surface-3);
+  border: 1px solid var(--card-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 5%, transparent);
 }
 
 .rail-tabs[hidden] {
   display: none;
 }
 
+/* 滑块就是选中态的实心底：主色实心 + 胶囊，几何仍由渲染模块测量写入。 */
 .rail-glider {
   position: absolute;
   top: 0;
   left: 0;
-  border: 1px solid var(--accent-line);
-  border-radius: 8px;
-  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 2px 12px -4px color-mix(in srgb, var(--accent) 60%, transparent);
   transition:
     transform 200ms var(--ease),
     width 200ms var(--ease),
@@ -524,7 +527,7 @@ body {
   height: 34px;
   padding: 0 9px;
   border: 0;
-  border-radius: 8px;
+  border-radius: 999px;
   background: transparent;
   color: var(--muted);
   font: inherit;
@@ -537,13 +540,14 @@ body {
   color: var(--text);
 }
 
+/* 选中态靠实心滑块 + 前景色对比表达，不靠描边或淡色底。 */
 .rail-tab[aria-selected="true"] {
-  color: var(--accent);
+  color: var(--on-accent);
   font-weight: 600;
 }
 
 .rail-panel + .rail-panel {
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--card-line);
 }
 
 /* 窄屏用可折叠块，宽屏把标题让给分段控件。 */
@@ -606,15 +610,22 @@ details[open] > summary::before {
   padding: 0;
 }
 
-/* 每种格式自成一格：左侧色条 + 淡底色区隔，不再是一张平铺的长列表。 */
+/* 中性卡面 + 左侧语义色细条 + 色点；语义色静态克制，悬停才加亮。 */
 .format-item {
   --tint: var(--accent);
 
   padding: var(--space-12) var(--space-14);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--surface-2);
-  background: color-mix(in srgb, var(--tint) 7%, var(--surface));
+  border: 1px solid var(--card-line);
+  border-radius: var(--radius-block);
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--tint) 65%, transparent);
+  transition:
+    border-color 120ms var(--ease),
+    box-shadow 120ms var(--ease);
+}
+
+.format-item:hover {
+  border-color: color-mix(in srgb, var(--tint) 22%, transparent);
   box-shadow: inset 2px 0 0 var(--tint);
 }
 
@@ -682,6 +693,11 @@ details[open] > summary::before {
   width: 6px;
   height: 6px;
   border-radius: 2px;
+  background: color-mix(in srgb, var(--tint) 65%, transparent);
+  transition: background-color 120ms var(--ease);
+}
+
+.format-item:hover dt::before {
   background: var(--tint);
 }
 
@@ -715,7 +731,7 @@ details[open] > summary::before {
 .format-note {
   margin: var(--space-14) 0 0;
   padding-top: var(--space-12);
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--card-line);
 }
 
 .result {
@@ -1117,9 +1133,9 @@ details[open] > summary::before {
 /* 支持矩阵 */
 .matrix-host {
   overflow-x: auto;
-  border: 1px solid var(--border);
+  border: 1px solid var(--card-line);
   border-radius: var(--radius-block);
-  background: var(--surface);
+  background: color-mix(in srgb, var(--text) 3%, transparent);
 }
 
 .matrix {
@@ -1132,7 +1148,7 @@ details[open] > summary::before {
 .matrix th,
 .matrix td {
   padding: var(--space-8) var(--space-4);
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--card-line);
   text-align: center;
 }
 
@@ -1174,7 +1190,7 @@ details[open] > summary::before {
 }
 
 .matrix tbody tr:hover {
-  background: var(--surface-2);
+  background: color-mix(in srgb, var(--text) 5%, transparent);
 }
 
 .toast {
