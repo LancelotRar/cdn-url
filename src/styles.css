@@ -189,6 +189,9 @@ body {
 
 /* 品牌行：单行字标，logo 方块与站名同高，不再充当落地页头图。 */
 .brand {
+  /* 站名字号同时决定 logo 的边长（见 .brand-mark），窄屏收到 20px 以免折行。 */
+  --brand-title-size: clamp(20px, 3vw, 27px);
+
   display: flex;
   align-items: center;
   gap: var(--space-14);
@@ -199,17 +202,19 @@ body {
 .brand-mark {
   display: grid;
   flex: none;
+  /* 边长 = 站名行高（字号 × 1.25）+ 说明的上外边距 2px + 说明行高（12px × 1.6），
+     也就是右侧文字块的总高度；改字号或说明行高时这里要同步。 */
+  width: calc(var(--brand-title-size) * 1.25 + 2px + 12px * 1.6);
+  height: calc(var(--brand-title-size) * 1.25 + 2px + 12px * 1.6);
   place-items: center;
-  width: 28px;
-  height: 28px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 14px;
   color: var(--text);
 }
 
 .brand-mark svg {
-  width: 18px;
-  height: 18px;
+  width: 62%;
+  height: 62%;
 }
 
 .brand-copy {
@@ -219,7 +224,7 @@ body {
 /* 字号降级是「字号不动」的唯一例外，只限页首这一块。 */
 .brand-copy h1 {
   margin: 0;
-  font-size: 13.5px;
+  font-size: var(--brand-title-size);
   font-weight: 650;
   line-height: 1.25;
 }
@@ -502,7 +507,8 @@ body {
   margin: var(--space-12);
   padding: var(--space-4);
   border: 1px solid var(--card-line);
-  border-radius: 999px;
+  /* 与外层卡片同圆角，不做胶囊。 */
+  border-radius: var(--radius-card);
   background: color-mix(in srgb, var(--text) 5%, transparent);
 }
 
@@ -516,7 +522,8 @@ body {
   top: 0;
   left: 0;
   border: 1px solid var(--accent);
-  border-radius: 999px;
+  /* 轨道圆角 18px 减去 4px 内边距，滑块与轨道同心。 */
+  border-radius: calc(var(--radius-card) - var(--space-4));
   background: var(--accent);
   box-shadow: 0 2px 12px -4px color-mix(in srgb, var(--accent) 60%, transparent);
   transition:
@@ -531,7 +538,7 @@ body {
   height: 34px;
   padding: 0 9px;
   border: 0;
-  border-radius: 999px;
+  border-radius: calc(var(--radius-card) - var(--space-4));
   background: transparent;
   color: var(--muted);
   font: inherit;
