@@ -30,15 +30,13 @@ const rejectionsCountElement = document.querySelector<HTMLElement>("#rejections-
 const toastElement = document.querySelector<HTMLElement>("#toast");
 const groupsElement = document.querySelector<HTMLElement>("#groups");
 const matrixElement = document.querySelector<HTMLElement>("#matrix");
-const matrixCountElement = document.querySelector<HTMLElement>("#matrix-count");
 const inputCountElement = document.querySelector<HTMLElement>("#input-count");
 const emptyStateElement = document.querySelector<HTMLElement>("#empty-state");
 const clearButton = document.querySelector<HTMLButtonElement>("#clear-input");
-const fillExampleButton = document.querySelector<HTMLButtonElement>("#fill-example");
 const pasteButton = document.querySelector<HTMLButtonElement>("#paste-input");
 const composerHint = document.querySelector<HTMLElement>("#composer-hint");
-const emptyFillButton = document.querySelector<HTMLButtonElement>("#empty-fill");
 const emptyFormatsButton = document.querySelector<HTMLButtonElement>("#empty-formats");
+const themeToggleElement = document.querySelector<HTMLButtonElement>("#theme-toggle");
 const railTabsElement = document.querySelector<HTMLElement>(".rail-tabs");
 const railGliderElement = document.querySelector<HTMLElement>(".rail-glider");
 const railTabElements = Array.from(document.querySelectorAll<HTMLButtonElement>(".rail-tab"));
@@ -53,15 +51,13 @@ if (
   !toastElement ||
   !groupsElement ||
   !matrixElement ||
-  !matrixCountElement ||
   !inputCountElement ||
   !emptyStateElement ||
   !clearButton ||
-  !fillExampleButton ||
   !pasteButton ||
   !composerHint ||
-  !emptyFillButton ||
   !emptyFormatsButton ||
+  !themeToggleElement ||
   !railTabsElement ||
   !railGliderElement ||
   railTabElements.length !== 2 ||
@@ -80,15 +76,13 @@ const rejectionsCount = rejectionsCountElement;
 const toast = toastElement;
 const groupsContainer = groupsElement;
 const matrixContainer = matrixElement;
-const matrixCount = matrixCountElement;
 const inputCount = inputCountElement;
 const emptyState = emptyStateElement;
 const clearInputButton = clearButton;
-const fillExample = fillExampleButton;
 const pasteInputButton = pasteButton;
 const hintElement = composerHint;
-const emptyFill = emptyFillButton;
 const emptyFormats = emptyFormatsButton;
+const themeToggle = themeToggleElement;
 const railTabsBar = railTabsElement;
 const railGlider = railGliderElement;
 const railTabs = railTabElements;
@@ -159,14 +153,28 @@ function selectRail(index: number, moveFocus: boolean): void {
   }
 }
 
-/** 示例源地址：仓库单文件、gist 直链、release 资产各一条，覆盖三种归一化分支。 */
-const EXAMPLE_SOURCES = [
-  "https://github.com/LancelotRar/best-cf-ips/blob/main/best-cf-ip-scanned-top20.txt",
-  "https://gist.githubusercontent.com/mn9ri4jdm5/fd2e299390c88720b4cb026b2795126a/raw/53489_qctld.md",
-  "https://github.com/MetaCubeX/mihomo/releases/download/v1.19.34/mihomo-linux-amd64-v3-v1.19.34.gz",
-].join("\n");
+const THEME_KEY = "cdn-url:theme";
 
-const DEFAULT_HINT = "一行一条";
+function currentTheme(): "light" | "dark" {
+  return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+}
+
+/** 按钮的按下态与提示文案跟着当前主题走，读屏与视觉保持一致。 */
+function syncThemeToggle(): void {
+  const dark = currentTheme() === "dark";
+  themeToggle.setAttribute("aria-pressed", dark ? "true" : "false");
+  themeToggle.title = dark ? "切换到浅色模式" : "切换到深色模式";
+}
+
+function setTheme(theme: "light" | "dark"): void {
+  document.documentElement.dataset.theme = theme;
+  try {
+    window.localStorage.setItem(THEME_KEY, theme);
+  } catch {
+    // file:// 或隐私模式下写不进去，主题在本次会话内仍然生效。
+  }
+  syncThemeToggle();
+}
 
 /**
  * 组级复制按钮的固定文案。
@@ -229,12 +237,14 @@ function autoGrow(): void {
 
 let hintTimer = 0;
 
-/** 工具条提示复用同一个位置，3 秒后回到默认文案，不弹模态。 */
+/** 工具条提示平时不占位，只在出现一次性消息时短暂显示，3 秒后收起。 */
 function showHint(text: string): void {
   hintElement.textContent = text;
+  hintElement.hidden = false;
   window.clearTimeout(hintTimer);
   hintTimer = window.setTimeout(() => {
-    hintElement.textContent = DEFAULT_HINT;
+    hintElement.hidden = true;
+    hintElement.textContent = "";
   }, 3000);
 }
 
@@ -280,14 +290,16 @@ clearInputButton.addEventListener("click", () => {
   inputElement.focus();
 });
 
-fillExample.addEventListener("click", () => setInputText(EXAMPLE_SOURCES));
-emptyFill.addEventListener("click", () => setInputText(EXAMPLE_SOURCES));
 pasteInputButton.addEventListener("click", () => {
   void pasteFromClipboard();
 });
 
+themeToggle.addEventListener("click", () => {
+  setTheme(currentTheme() === "dark" ? "light" : "dark");
+});
+
 /**
- * 空状态里的「支持的 6 类地址」：宽屏切到「支持的地址」面板，
+ * 空状态里的「查看支持的格式」：宽屏切到「支持的格式」面板，
  * 窄屏直接展开第一块，然后把参考区滚进视野。
  */
 emptyFormats.addEventListener("click", () => {
@@ -308,8 +320,14 @@ railTabsBar.addEventListener("keydown", (event) =>
 railMedia.addEventListener("change", syncRailMode);
 window.addEventListener("resize", positionRailGlider);
 
+// 轨道宽度会随滚动条、断点与字体变化，Observe 一次就能一直在正确位置。
+new ResizeObserver(() => {
+  positionRailGlider();
+}).observe(railTabsBar);
+
 syncRailMode();
 requestAnimationFrame(positionRailGlider);
+syncThemeToggle();
 
 refresh();
 
@@ -342,7 +360,6 @@ function render(result: ConversionResult): void {
   // 刚插入的节点还没有布局，等一帧再量滑块位置。
   requestAnimationFrame(positionTabGliders);
 
-  matrixCount.textContent = `${result.catalog.services.length} 个主服务 × ${result.catalog.sourceTypes.length} 类源类型。`;
   matrixContainer.replaceChildren(renderMatrix(result.catalog));
 }
 
@@ -436,14 +453,11 @@ function renderGroup(group: ServiceGroup, enterDelayMs: number | null): HTMLElem
   const tools = document.createElement("div");
   tools.className = "group-tools";
 
-  const count = document.createElement("span");
-  count.className = "group-count";
-
   const copyGroup = document.createElement("button");
   copyGroup.type = "button";
   copyGroup.className = "action action-copy";
 
-  tools.append(count, copyGroup);
+  tools.append(copyGroup);
   head.append(identity, tools);
   section.append(head);
 
@@ -468,10 +482,9 @@ function renderGroup(group: ServiceGroup, enterDelayMs: number | null): HTMLElem
   const currentVariant = (): ServiceVariant => group.variants[selectedIndex];
   const idleCopyLabel = (): string => GROUP_COPY_LABEL;
 
-  // 原地同步：只重画这一组的行、计数、复制按钮与选项卡状态，焦点留在被按的 tab 上。
+  // 原地同步：只重画这一组的行、复制按钮与选项卡状态，焦点留在被按的 tab 上。
   function sync(): void {
     const variant = currentVariant();
-    count.textContent = `${variant.rows.length} 行`;
     copyGroup.textContent = idleCopyLabel();
     list.replaceChildren(...variant.rows.map(renderRow));
 
