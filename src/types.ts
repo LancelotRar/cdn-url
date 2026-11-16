@@ -72,6 +72,8 @@ export interface Service {
   capabilities: readonly SourceType[];
   /** 备用入口归属的主服务 id；有该字段即视为备用入口（不单独成组）。 */
   fallbackOf?: string;
+  /** 选项卡短名；缺省取端点主机名首段。仅在首段会撞名时才需要显式给出。 */
+  tabLabel?: string;
 }
 
 /** 一条源地址在某个加速服务下的那一行。 */
@@ -101,6 +103,8 @@ export interface ServiceVariant {
   serviceId: string;
   serviceName: string;
   endpoint: string;
+  /** 选项卡文案，已解析：显式短名优先，否则取端点主机名首段。 */
+  label: string;
   isFallback: boolean;
   rows: ResultRow[];
 }

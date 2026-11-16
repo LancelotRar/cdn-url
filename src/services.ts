@@ -125,3 +125,11 @@ export function hostName(endpoint: string): string {
 export function hostShortName(endpoint: string): string {
   return hostName(endpoint).split(".")[0];
 }
+
+/**
+ * 选项卡短名：服务显式给出的短名优先，缺省取端点主机名首段。
+ * 在结果模型里就解析成最终文案，界面层不再自行推导，也不读注册表。
+ */
+export function variantLabelOf(service: Service): string {
+  return service.tabLabel ?? hostShortName(service.endpoint);
+}
