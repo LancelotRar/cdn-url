@@ -15,7 +15,7 @@ export const SERVICES: readonly Service[] = [
   },
   {
     id: "jsdelivr",
-    name: "cdn.jsdelivr.net",
+    name: "jsdelivr.net",
     endpoint: "https://cdn.jsdelivr.net",
     syntax: "rearrange",
     stripScheme: false,
