@@ -2,39 +2,86 @@
  * 设计 token：浅色与深色只换变量值，不写第二套选择器。
  * 主题由 `<html data-theme>` 决定（页面加载前由内联脚本定好），
  * 因此这里不需要 `prefers-color-scheme` 媒体查询。
+ * 材质类 token（卡面 / 内凹面 / 标签面 / 卡片投影）本票只定义，02–04 才消费。
  */
 :root {
   color-scheme: light;
 
-  --bg: #f7f8fb;
+  --bg: #f4f5f8;
   --surface: #ffffff;
-  --surface-2: #f4f6fa;
-  --surface-3: #eef1f7;
-  --border: #b5bfcb;
-  --border-strong: #8e9aa9;
-  --text: #10131a;
-  --muted: #606b7d;
-  --faint: #8b96a8;
+  --surface-2: #f2f3f7;
+  --border: rgba(17, 17, 19, 0.12);
+  --border-strong: rgba(17, 17, 19, 0.26);
+  --text: #1d1d1f;
+  --muted: #6e6e73;
+  --faint: #86868b;
 
-  --accent: #4f46e5;
-  --accent-hover: #4338ca;
-  --accent-soft: #eef0ff;
-  --accent-line: #cfd0fb;
+  --accent: #0071e3;
+  --accent-hover: #0062c4;
+  --accent-soft: rgba(0, 113, 227, 0.12);
+  --accent-line: rgba(0, 113, 227, 0.28);
   --on-accent: #ffffff;
 
-  --danger: #c0392b;
-  --danger-soft: #fdf1ef;
-  --ok: #15803d;
-  --ok-soft: #eef9f1;
+  --danger: #c8332b;
+  --danger-soft: rgba(200, 51, 43, 0.12);
+  --ok: #0f7a3d;
+  --ok-soft: rgba(15, 122, 61, 0.12);
 
-  --code-bg: #f6f7fb;
-  --glow: rgba(79, 70, 229, 0.07);
-  --shadow-1: 0 1px 2px rgba(16, 19, 26, 0.05);
-  --shadow-2: 0 14px 40px -20px rgba(16, 19, 26, 0.28);
+  --code-bg: rgba(17, 17, 19, 0.05);
+  --shadow-2: 0 14px 40px -20px rgba(17, 17, 19, 0.28);
 
-  --radius-card: 16px;
+  /* 页面底三段径向渐变：左上偏冷、右上偏紫、底部偏深。 */
+  --bg-grad-top-left: radial-gradient(900px 520px at 8% -6%, rgba(0, 113, 227, 0.12), transparent 70%);
+  --bg-grad-top-right: radial-gradient(820px 520px at 96% 0%, rgba(124, 58, 237, 0.1), transparent 72%);
+  --bg-grad-bottom: radial-gradient(1100px 620px at 50% 118%, rgba(17, 17, 19, 0.1), transparent 74%);
+
+  /* 主卡面：半透明实底 + hairline + 顶部内高光 + 中距离投影。 */
+  --card-face: rgba(255, 255, 255, 0.92);
+  --card-line: rgba(17, 17, 19, 0.08);
+  --card-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --card-shadow: var(--card-highlight), 0 6px 22px rgba(17, 17, 19, 0.08);
+  --card-shadow-hover:
+    var(--card-highlight), 0 14px 32px rgba(17, 17, 19, 0.12),
+    0 0 0 1px rgba(0, 113, 227, 0.35);
+
+  /* 内凹面：比卡面深一档，配内阴影与小投影。 */
+  --inset-face: rgba(241, 243, 247, 0.9);
+  --inset-line: rgba(17, 17, 19, 0.1);
+  --inset-inner: inset 0 1px 2px rgba(17, 17, 19, 0.06);
+  --inset-shadow: 0 1px 2px rgba(17, 17, 19, 0.04);
+
+  /*
+   * 标签面：语义标签的色相由使用方的 `--tag-tint`（默认主色）提供，
+   * 底色与描边按下面两档 alpha 混出，文字直接用同一个 `--tag-tint`；
+   * 中性标签（平台小胶囊一类）用 neutral 两枚。alpha 与主题无关，只在 :root 定义。
+   */
+  --tag-face-alpha: 12%;
+  --tag-line-alpha: 25%;
+  --tag-tint: var(--accent);
+  --tag-neutral-face: rgba(0, 0, 0, 0.05);
+  --tag-neutral-line: rgba(0, 0, 0, 0.08);
+
+  --radius-card: 18px;
   --radius-block: 10px;
+  --radius-tag: 5px;
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* 间距：只抽重复出现三次以上的值，后缀即像素值；一次性间距留在规则原位。 */
+  --space-1: 1px;
+  --space-2: 2px;
+  --space-3: 3px;
+  --space-4: 4px;
+  --space-5: 5px;
+  --space-6: 6px;
+  --space-7: 7px;
+  --space-8: 8px;
+  --space-10: 10px;
+  --space-12: 12px;
+  --space-14: 14px;
+  --space-16: 16px;
+  --space-18: 18px;
+  --space-22: 22px;
+  --space-24: 24px;
 
   /* 行内按钮的宽度与间距是同一套刻度：组级复制按钮按「复制 + 打开」的总宽对齐。 */
   --action-w: 56px;
@@ -48,31 +95,53 @@
 :root[data-theme="dark"] {
   color-scheme: dark;
 
-  --bg: #0a0c11;
-  --surface: #131821;
-  --surface-2: #0e1218;
-  --surface-3: #1a2029;
-  --border: #242c38;
-  --border-strong: #33404f;
-  --text: #e8edf5;
-  --muted: #98a4b6;
-  --faint: #7c8798;
+  --bg: #09090d;
+  --surface: #16161c;
+  --surface-2: #101014;
+  --border: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.24);
+  --text: #f4f4f5;
+  --muted: #a1a1aa;
+  --faint: #71717a;
 
-  --accent: #8b8bf5;
-  --accent-hover: #a5a5ff;
-  --accent-soft: #1a1d3a;
-  --accent-line: #2b2f5e;
-  --on-accent: #0b0d16;
+  --accent: #38bdf8;
+  --accent-hover: #7dd3fc;
+  --accent-soft: rgba(56, 189, 248, 0.16);
+  --accent-line: rgba(56, 189, 248, 0.3);
+  --on-accent: #0b0b0f;
 
-  --danger: #ff8a80;
-  --danger-soft: #2a1512;
-  --ok: #4ec77d;
-  --ok-soft: #10251a;
+  --danger: #f87171;
+  --danger-soft: rgba(248, 113, 113, 0.12);
+  --ok: #4ade80;
+  --ok-soft: rgba(74, 222, 128, 0.12);
 
-  --code-bg: #0d1116;
-  --glow: rgba(124, 124, 245, 0.16);
-  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --code-bg: rgba(255, 255, 255, 0.06);
   --shadow-2: 0 18px 44px -22px rgba(0, 0, 0, 0.85);
+
+  /* 页面底三段径向渐变：左上偏冷、右上偏紫、底部偏深。 */
+  --bg-grad-top-left: radial-gradient(900px 520px at 8% -6%, rgba(56, 189, 248, 0.13), transparent 70%);
+  --bg-grad-top-right: radial-gradient(820px 560px at 96% 0%, rgba(139, 92, 246, 0.15), transparent 72%);
+  --bg-grad-bottom: radial-gradient(1100px 620px at 50% 120%, rgba(0, 0, 0, 0.6), transparent 74%);
+
+  /* 主卡面：半透明实底 + hairline + 顶部内高光 + 中距离投影。 */
+  --card-face: rgba(22, 22, 28, 0.7);
+  --card-line: rgba(255, 255, 255, 0.12);
+  --card-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --card-shadow: var(--card-highlight), 0 6px 22px rgba(0, 0, 0, 0.45);
+  --card-shadow-hover:
+    var(--card-highlight), 0 14px 34px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(56, 189, 248, 0.35);
+
+  /* 内凹面：比卡面深一档，配内阴影与小投影。 */
+  --inset-face: rgba(9, 9, 13, 0.55);
+  --inset-line: rgba(255, 255, 255, 0.08);
+  --inset-inner: inset 0 1px 2px rgba(0, 0, 0, 0.45);
+  --inset-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+
+  /* 标签面：主色与中性面随主题换值，两档 alpha 沿用 :root。 */
+  --tag-tint: var(--accent);
+  --tag-neutral-face: rgba(255, 255, 255, 0.05);
+  --tag-neutral-line: rgba(255, 255, 255, 0.08);
 }
 
 /* 深色下淡底与轨道仍然分得开，无需额外覆盖。 */
@@ -89,23 +158,14 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image: var(--bg-grad-top-left), var(--bg-grad-top-right), var(--bg-grad-bottom);
+  background-repeat: no-repeat;
   color: var(--text);
   font-family: var(--font-sans);
   font-size: 15px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-}
-
-/* 唯一的装饰层：顶部一层极浅的品牌色光，不与内容争夺注意力。 */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0 0 auto;
-  height: 420px;
-  background: radial-gradient(620px 260px at 50% 0%, var(--glow), transparent 72%);
-  pointer-events: none;
-  z-index: -1;
 }
 
 :focus-visible {
@@ -119,47 +179,47 @@ body::before {
   padding: 32px 28px 104px;
 }
 
-/* 品牌行 */
+/* 品牌行：单行字标，logo 方块与站名同高，不再充当落地页头图。 */
 .brand {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--space-14);
   margin-bottom: 30px;
 }
 
+/* 字标方块：去填充，只留 hairline；内部六边形线稿按新方块等比缩放。 */
 .brand-mark {
   display: grid;
   flex: none;
   place-items: center;
-  width: 40px;
-  height: 40px;
-  border: 1px solid var(--accent-line);
-  border-radius: 12px;
-  background: var(--accent-soft);
-  color: var(--accent);
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
 }
 
 .brand-mark svg {
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  height: 18px;
 }
 
 .brand-copy {
   min-width: 0;
 }
 
+/* 字号降级是「字号不动」的唯一例外，只限页首这一块。 */
 .brand-copy h1 {
   margin: 0;
-  font-size: clamp(24px, 2.4vw, 33px);
+  font-size: 13.5px;
   font-weight: 650;
   line-height: 1.25;
-  letter-spacing: -0.02em;
 }
 
 .brand-copy p {
-  margin: 2px 0 0;
+  margin: var(--space-2) 0 0;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .theme-toggle {
@@ -205,13 +265,14 @@ body::before {
   display: none;
 }
 
+/* 事实标签：标签面的中性变体（5% 前景底 / 8% 前景边），圆角矩形不是胶囊。 */
 .brand-badge {
   flex: none;
   margin-left: 0;
-  padding: 5px 11px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--surface);
+  padding: var(--space-5) 11px;
+  border: 1px solid var(--tag-neutral-line);
+  border-radius: var(--radius-tag);
+  background: var(--tag-neutral-face);
   color: var(--muted);
   font-size: 12px;
   letter-spacing: 0.02em;
@@ -224,22 +285,23 @@ body::before {
 }
 
 .help-row {
-  margin-top: 10px;
+  margin-top: var(--space-10);
 }
 
+/* 输入卡是主卡面：比页面底亮一档，才撑得起里面那口「井」。 */
 .composer {
   padding: 20px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--card-line);
   border-radius: var(--radius-card);
-  background: var(--surface);
-  box-shadow: var(--shadow-1);
+  background: var(--card-face);
+  box-shadow: var(--card-shadow);
 }
 
 .composer-head {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
+  gap: var(--space-10);
+  margin-bottom: var(--space-12);
 }
 
 .composer-title {
@@ -260,14 +322,14 @@ body::before {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 8px 12px;
-  margin-top: 14px;
+  gap: var(--space-8) var(--space-12);
+  margin-top: var(--space-14);
 }
 
 .composer-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-8);
 }
 
 .composer-hint {
@@ -281,7 +343,7 @@ body::before {
   align-items: center;
   justify-content: center;
   height: 36px;
-  padding: 0 14px;
+  padding: 0 var(--space-14);
   border: 1px solid transparent;
   border-radius: 8px;
   background: transparent;
@@ -296,27 +358,31 @@ body::before {
     color 120ms var(--ease);
 }
 
+/* 次级动作：中性半透明底 + hairline + 主色文字，低对比胶囊，不与主操作抢注意力。 */
 .btn-soft {
   border-color: var(--border);
-  background: var(--surface-2);
-  color: var(--text);
+  background: color-mix(in srgb, var(--text) 5%, transparent);
+  color: var(--accent);
+  border-radius: 999px;
 }
 
 .btn-soft:hover {
-  border-color: var(--border-strong);
-  background: var(--surface-3);
+  border-color: var(--accent-line);
+  background: color-mix(in srgb, var(--text) 9%, transparent);
 }
 
+/* 空状态与卡面同材质：hairline 实线取代旧的虚线占位框。 */
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-6);
   margin-top: 26px;
   padding: 48px 28px;
-  border: 1px dashed var(--border-strong);
+  border: 1px solid var(--card-line);
   border-radius: var(--radius-card);
-  background: linear-gradient(180deg, var(--surface), var(--surface-2));
+  background: var(--card-face);
+  box-shadow: var(--card-shadow);
   text-align: center;
 }
 
@@ -324,16 +390,17 @@ body::before {
   display: none;
 }
 
+/* 引导图标：中性次级面，不占主色，尺寸与圆角保持原值。 */
 .empty-icon {
   display: grid;
   place-items: center;
   width: 48px;
   height: 48px;
-  margin-bottom: 4px;
-  border: 1px solid var(--accent-line);
+  margin-bottom: var(--space-4);
+  border: 1px solid var(--card-line);
   border-radius: 12px;
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--surface-2);
+  color: var(--muted);
 }
 
 .empty-icon svg {
@@ -358,19 +425,21 @@ body::before {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
-  margin-top: 10px;
+  gap: var(--space-8);
+  margin-top: var(--space-10);
 }
 
+/* 输入框是挖在主卡面里的井：更暗一档的底 + 内凹内阴影 + 小投影。 */
 .source-input {
   display: block;
   width: 100%;
   min-height: 148px;
   max-height: 320px;
-  padding: 16px;
-  border: 1px solid var(--border);
+  padding: var(--space-16);
+  border: 1px solid var(--inset-line);
   border-radius: var(--radius-block);
-  background: var(--surface-2);
+  background: var(--inset-face);
+  box-shadow: var(--inset-inner), var(--inset-shadow);
   color: var(--text);
   font-family: var(--font-mono);
   font-size: 14px;
@@ -386,10 +455,11 @@ body::before {
   border-color: var(--border-strong);
 }
 
+/* 聚焦只加天蓝柔和环，内阴影保留，避免读到「跳出井口」的跳变。 */
 .source-input:focus {
   border-color: var(--accent);
   outline: none;
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  box-shadow: 0 0 0 3px var(--accent-soft), var(--inset-inner), var(--inset-shadow);
 }
 
 .source-input:focus-visible {
@@ -399,7 +469,7 @@ body::before {
 .layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 24px;
+  gap: var(--space-24);
   align-items: start;
 }
 
@@ -407,37 +477,40 @@ body::before {
   min-width: 0;
 }
 
+/* 参考卡与分组卡、输入卡共用同一套卡面配方。 */
 .rail-card {
   overflow: hidden;
-  border: 1px solid var(--border);
+  border: 1px solid var(--card-line);
   border-radius: var(--radius-card);
-  background: var(--surface);
-  box-shadow: var(--shadow-1);
+  background: var(--card-face);
+  box-shadow: var(--card-shadow);
 }
 
 .rail-tabs {
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2px;
-  margin: 12px;
-  padding: 4px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-block);
-  background: var(--surface-3);
+  gap: var(--space-2);
+  margin: var(--space-12);
+  padding: var(--space-4);
+  border: 1px solid var(--card-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 5%, transparent);
 }
 
 .rail-tabs[hidden] {
   display: none;
 }
 
+/* 滑块就是选中态的实心底：主色实心 + 胶囊，几何仍由渲染模块测量写入。 */
 .rail-glider {
   position: absolute;
   top: 0;
   left: 0;
-  border: 1px solid var(--accent-line);
-  border-radius: 8px;
-  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 2px 12px -4px color-mix(in srgb, var(--accent) 60%, transparent);
   transition:
     transform 200ms var(--ease),
     width 200ms var(--ease),
@@ -450,7 +523,7 @@ body::before {
   height: 34px;
   padding: 0 9px;
   border: 0;
-  border-radius: 8px;
+  border-radius: 999px;
   background: transparent;
   color: var(--muted);
   font: inherit;
@@ -460,24 +533,25 @@ body::before {
 }
 
 .rail-tab:hover {
-  color: var(--text);
+  color: var(--accent-hover);
 }
 
+/* 选中态靠实心滑块 + 前景色对比表达，不靠描边或淡色底。 */
 .rail-tab[aria-selected="true"] {
-  color: var(--accent);
+  color: var(--on-accent);
   font-weight: 600;
 }
 
 .rail-panel + .rail-panel {
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--card-line);
 }
 
 /* 窄屏用可折叠块，宽屏把标题让给分段控件。 */
 .rail-panel-title {
   display: flex;
-  gap: 7px;
+  gap: var(--space-7);
   align-items: center;
-  padding: 14px 18px;
+  padding: var(--space-14) var(--space-18);
   color: var(--text);
   font-size: 13.5px;
   font-weight: 600;
@@ -486,14 +560,14 @@ body::before {
 }
 
 .rail-content {
-  padding: 0 18px 18px;
+  padding: 0 var(--space-18) var(--space-18);
   color: var(--muted);
   font-size: 13.5px;
 }
 
 details > summary {
   display: inline-flex;
-  gap: 7px;
+  gap: var(--space-7);
   align-items: center;
   color: var(--muted);
   cursor: pointer;
@@ -527,25 +601,32 @@ details[open] > summary::before {
 .format-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-10);
   margin: 0;
   padding: 0;
 }
 
-/* 每种格式自成一格：左侧色条 + 淡底色区隔，不再是一张平铺的长列表。 */
+/* 中性卡面 + 左侧语义色细条 + 色点；语义色静态克制，悬停才加亮。 */
 .format-item {
   --tint: var(--accent);
 
-  padding: 12px 14px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--surface-2);
-  background: color-mix(in srgb, var(--tint) 7%, var(--surface));
+  padding: var(--space-12) var(--space-14);
+  border: 1px solid var(--card-line);
+  border-radius: var(--radius-block);
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--tint) 65%, transparent);
+  transition:
+    border-color 120ms var(--ease),
+    box-shadow 120ms var(--ease);
+}
+
+.format-item:hover {
+  border-color: color-mix(in srgb, var(--tint) 22%, transparent);
   box-shadow: inset 2px 0 0 var(--tint);
 }
 
 .format-item[data-kind="repo"] {
-  --tint: #4f46e5;
+  --tint: #a855f7;
 }
 
 .format-item[data-kind="raw"] {
@@ -569,7 +650,7 @@ details[open] > summary::before {
 }
 
 :root[data-theme="dark"] .format-item[data-kind="repo"] {
-  --tint: #8b8bf5;
+  --tint: #c084fc;
 }
 
 :root[data-theme="dark"] .format-item[data-kind="raw"] {
@@ -594,7 +675,7 @@ details[open] > summary::before {
 
 .format-item dt {
   display: flex;
-  gap: 7px;
+  gap: var(--space-7);
   align-items: center;
   color: var(--text);
   font-size: 13.5px;
@@ -608,15 +689,20 @@ details[open] > summary::before {
   width: 6px;
   height: 6px;
   border-radius: 2px;
+  background: color-mix(in srgb, var(--tint) 65%, transparent);
+  transition: background-color 120ms var(--ease);
+}
+
+.format-item:hover dt::before {
   background: var(--tint);
 }
 
 .format-item dd {
-  margin: 4px 0 0;
+  margin: var(--space-4) 0 0;
 }
 
 .format-note-line {
-  margin: 6px 0 0;
+  margin: var(--space-6) 0 0;
   color: var(--muted);
 }
 
@@ -629,7 +715,7 @@ details[open] > summary::before {
 }
 
 .format-note code {
-  padding: 1px 5px;
+  padding: var(--space-1) var(--space-5);
   border-radius: 5px;
   background: var(--code-bg);
   color: var(--text);
@@ -639,22 +725,22 @@ details[open] > summary::before {
 }
 
 .format-note {
-  margin: 14px 0 0;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
+  margin: var(--space-14) 0 0;
+  padding-top: var(--space-12);
+  border-top: 1px solid var(--card-line);
 }
 
 .result {
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: var(--space-22);
   margin-top: 26px;
 }
 
 .summary {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 12px;
+  gap: var(--space-8) var(--space-12);
   align-items: center;
   margin: 0;
   color: var(--muted);
@@ -663,7 +749,7 @@ details[open] > summary::before {
 
 .summary-item {
   display: inline-flex;
-  gap: 4px;
+  gap: var(--space-4);
   align-items: baseline;
   white-space: nowrap;
 }
@@ -697,8 +783,8 @@ details[open] > summary::before {
 .section-head {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: var(--space-8);
+  margin-bottom: var(--space-12);
 }
 
 .section-count {
@@ -710,20 +796,31 @@ details[open] > summary::before {
 .groups {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: var(--space-18);
 }
 
+/* 分组卡与输入卡共用同一组卡面 token，悬停时整块抬起。 */
 .group {
   overflow: hidden;
-  border: 1px solid var(--border);
+  border: 1px solid var(--card-line);
   border-radius: var(--radius-card);
-  background: var(--surface);
-  box-shadow: var(--shadow-1);
+  background: var(--card-face);
+  box-shadow: var(--card-shadow);
+  transition:
+    transform 150ms var(--ease),
+    box-shadow 150ms var(--ease);
+}
+
+/* 与参考站一致：上浮 3px、极轻微放大，投影换成带主色光环的版本。 */
+.group:hover {
+  transform: translateY(-3px) scale(1.004);
+  box-shadow: var(--card-shadow-hover);
 }
 
 /* 只给本次新出现的分组播一次入场；总时长由延迟上限压在 240ms 内。 */
+/* 填充用 backwards：延迟期间保持隐藏，播完就把 transform 交还给悬停规则。 */
 .group.is-entering {
-  animation: group-enter 160ms var(--ease) both;
+  animation: group-enter 160ms var(--ease) backwards;
   animation-delay: var(--enter-delay, 0ms);
 }
 
@@ -744,15 +841,15 @@ details[open] > summary::before {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 8px 18px;
-  padding: 16px 18px;
+  gap: var(--space-8) var(--space-18);
+  padding: var(--space-16) var(--space-18);
 }
 
 .group-identity {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px 10px;
+  gap: var(--space-6) var(--space-10);
   min-width: 0;
 }
 
@@ -767,22 +864,28 @@ details[open] > summary::before {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 6px;
+  gap: var(--space-4) var(--space-6);
   line-height: 1.5;
 }
 
+/* 「可加速」引导词用标签面的中性变体：5% 前景底 + 8% 前景边 + 弱化文字。 */
 .caps-lead {
+  padding: var(--space-1) var(--space-6);
+  border: 1px solid var(--tag-neutral-line);
+  border-radius: var(--radius-tag);
+  background: var(--tag-neutral-face);
   color: var(--muted);
   font-size: 12px;
   white-space: nowrap;
 }
 
+/* 能力标签是标签面：语义色 12% 底 + 25% 描边 + 语义色文字，圆角矩形不是胶囊。 */
 .cap {
-  padding: 2px 9px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--surface-2);
-  color: var(--muted);
+  padding: var(--space-2) 9px;
+  border: 1px solid color-mix(in srgb, var(--tag-tint) var(--tag-line-alpha), transparent);
+  border-radius: var(--radius-tag);
+  background: color-mix(in srgb, var(--tag-tint) var(--tag-face-alpha), transparent);
+  color: var(--tag-tint);
   font-size: 12px;
   white-space: nowrap;
 }
@@ -791,7 +894,7 @@ details[open] > summary::before {
   display: flex;
   flex: none;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-10);
 }
 
 .group-tools .action-copy {
@@ -802,20 +905,21 @@ details[open] > summary::before {
 .group-tabs {
   display: flex;
   flex-wrap: wrap;
-  padding: 0 18px 14px;
+  padding: 0 var(--space-18) var(--space-14);
 }
 
 /* 主机入口是一个分段控件：滑块是装饰，选中语义仍由 aria-selected 表达。 */
 .tab-track {
   position: relative;
   display: inline-flex;
-  gap: 2px;
-  padding: 3px;
-  border: 1px solid var(--border);
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--card-line);
   border-radius: 999px;
-  background: var(--surface-2);
+  background: color-mix(in srgb, var(--text) 5%, transparent);
 }
 
+/* 滑块就是选中态的实心底：主色实心 + 999 胶囊，几何仍由渲染模块测量写入。 */
 .tab-glider {
   position: absolute;
   top: 0;
@@ -823,6 +927,7 @@ details[open] > summary::before {
   z-index: 0;
   border-radius: 999px;
   background: var(--accent);
+  box-shadow: 0 2px 12px -4px color-mix(in srgb, var(--accent) 60%, transparent);
   transition:
     transform 200ms var(--ease),
     width 200ms var(--ease),
@@ -832,7 +937,7 @@ details[open] > summary::before {
 .host-tab {
   position: relative;
   z-index: 1;
-  padding: 5px 13px;
+  padding: var(--space-5) 13px;
   border: 0;
   border-radius: 999px;
   background: transparent;
@@ -845,7 +950,7 @@ details[open] > summary::before {
 }
 
 .host-tab:hover {
-  color: var(--text);
+  color: var(--accent-hover);
 }
 
 /* 选中态同时靠滑块、字重与颜色表达，不只依赖颜色。 */
@@ -857,7 +962,7 @@ details[open] > summary::before {
 .rows {
   margin: 0;
   padding: 0;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--card-line);
   list-style: none;
 }
 
@@ -868,21 +973,23 @@ details[open] > summary::before {
     "url actions"
     "meta actions";
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 3px 16px;
+  gap: var(--space-3) var(--space-16);
   align-items: center;
-  padding: 14px 18px;
+  padding: var(--space-14) var(--space-18);
   transition: background-color 120ms var(--ease);
 }
 
 .row + .row {
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--card-line);
 }
 
+/* 行悬停用中性叠加，不改变卡面本身的明度关系。 */
 .row:hover,
 .row:focus-within {
-  background: var(--surface-2);
+  background: color-mix(in srgb, var(--text) 5%, transparent);
 }
 
+/* 源地址标签是次级信息：等宽显示但对比低于加速地址，让 URL 先被看到。 */
 .row-label {
   grid-area: label;
   overflow: hidden;
@@ -893,6 +1000,7 @@ details[open] > summary::before {
   white-space: nowrap;
 }
 
+/* 加速地址是每行的主角：等宽、可整行断行，既不截断也不横向溢出。 */
 .row-url {
   grid-area: url;
   font-family: var(--font-mono);
@@ -905,7 +1013,7 @@ details[open] > summary::before {
   grid-area: meta;
   display: flex;
   flex-wrap: wrap;
-  gap: 3px 10px;
+  gap: var(--space-3) var(--space-10);
   color: var(--muted);
   font-size: 13px;
 }
@@ -918,20 +1026,21 @@ details[open] > summary::before {
 
 /* 行 hover 已经用底色表达指向，按钮只做轻微强调，不压暗主操作。 */
 .row:hover .action-open {
-  border-color: var(--border-strong);
+  border-color: var(--accent-line);
 }
 
+/* 所有动作按钮同一套材质：中性半透明底 + hairline + 主色文字 + 999 胶囊。 */
 .action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: var(--action-w);
   height: 34px;
-  padding: 0 12px;
+  padding: 0 var(--space-12);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
-  color: var(--text);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 5%, transparent);
+  color: var(--accent);
   font: inherit;
   font-size: 13.5px;
   text-decoration: none;
@@ -943,21 +1052,13 @@ details[open] > summary::before {
 }
 
 .action:hover {
-  border-color: var(--border-strong);
-  background: var(--surface-2);
+  border-color: var(--accent-line);
+  background: color-mix(in srgb, var(--text) 9%, transparent);
 }
 
+/* 组级与行内按钮共用同一套胶囊材质；组级只是把宽度对齐到行内两枚按钮的总宽。 */
 .action-copy {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: var(--on-accent);
   font-weight: 550;
-}
-
-.action-copy:hover {
-  border-color: var(--accent-hover);
-  background: var(--accent-hover);
-  color: var(--on-accent);
 }
 
 /* 复制结果用同一颗按钮表达，不新开一层弹窗。 */
@@ -973,15 +1074,21 @@ details[open] > summary::before {
   color: var(--danger);
 }
 
+/* 无法处理区块与分组卡同属卡面，但只留内高光、不带上浮投影，视觉权重低于分组。 */
 .rejections {
   overflow: hidden;
   margin: 0;
   padding: 0;
-  border: 1px solid var(--border);
+  border: 1px solid var(--card-line);
   border-radius: var(--radius-card);
-  background: var(--surface);
-  box-shadow: var(--shadow-1);
+  background: var(--card-face);
+  box-shadow: var(--card-highlight);
   list-style: none;
+}
+
+/* 这个区块的标题退到弱化文字色，避免与分组名争层级。 */
+.rejections-section .section-title {
+  color: var(--muted);
 }
 
 .rejection {
@@ -990,12 +1097,12 @@ details[open] > summary::before {
     "line source"
     "line error";
   grid-template-columns: auto minmax(0, 1fr);
-  gap: 2px 12px;
-  padding: 14px 18px;
+  gap: var(--space-2) var(--space-12);
+  padding: var(--space-14) var(--space-18);
 }
 
 .rejection + .rejection {
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--card-line);
 }
 
 .rejection-line {
@@ -1022,9 +1129,9 @@ details[open] > summary::before {
 /* 支持矩阵 */
 .matrix-host {
   overflow-x: auto;
-  border: 1px solid var(--border);
+  border: 1px solid var(--card-line);
   border-radius: var(--radius-block);
-  background: var(--surface);
+  background: color-mix(in srgb, var(--text) 3%, transparent);
 }
 
 .matrix {
@@ -1036,8 +1143,8 @@ details[open] > summary::before {
 
 .matrix th,
 .matrix td {
-  padding: 8px 4px;
-  border-top: 1px solid var(--border);
+  padding: var(--space-8) var(--space-4);
+  border-top: 1px solid var(--card-line);
   text-align: center;
 }
 
@@ -1079,16 +1186,16 @@ details[open] > summary::before {
 }
 
 .matrix tbody tr:hover {
-  background: var(--surface-2);
+  background: color-mix(in srgb, var(--text) 5%, transparent);
 }
 
 .toast {
   position: fixed;
-  bottom: 24px;
-  left: 24px;
+  bottom: var(--space-24);
+  left: var(--space-24);
   z-index: 20;
   max-width: calc(100vw - 48px);
-  padding: 12px 16px;
+  padding: var(--space-12) var(--space-16);
   border: 1px solid var(--border);
   border-radius: var(--radius-block);
   background: var(--surface);
@@ -1121,7 +1228,7 @@ details[open] > summary::before {
 
   .rail {
     position: sticky;
-    top: 24px;
+    top: var(--space-24);
     max-height: calc(100vh - 48px);
     overflow-y: auto;
     overscroll-behavior: contain;
@@ -1140,31 +1247,31 @@ details[open] > summary::before {
   }
 
   .rail-content {
-    padding-top: 18px;
+    padding-top: var(--space-18);
   }
 }
 
 @media (max-width: 560px) {
   .shell {
-    padding: 22px 18px 76px;
+    padding: var(--space-22) var(--space-18) 76px;
   }
 
   /* 窄屏收紧能力标签，四项通常能排在同一行，避免最后一枚标签单独换行。 */
   .group-caps {
-    gap: 4px;
+    gap: var(--space-4);
   }
 
   .cap {
-    padding: 1px 6px;
+    padding: var(--space-1) var(--space-6);
   }
 
   .brand {
     align-items: flex-start;
-    margin-bottom: 22px;
+    margin-bottom: var(--space-22);
   }
 
   .brand-mark {
-    margin-top: 1px;
+    margin-top: var(--space-1);
   }
 
   .brand-badge {
@@ -1178,11 +1285,11 @@ details[open] > summary::before {
       "meta"
       "actions";
     grid-template-columns: minmax(0, 1fr);
-    gap: 4px;
+    gap: var(--space-4);
   }
 
   .row-actions {
-    margin-top: 6px;
+    margin-top: var(--space-6);
   }
 
   .group-tools {
@@ -1202,5 +1309,10 @@ details[open] > summary::before {
 
   .group.is-entering {
     animation: none !important;
+  }
+
+  /* 悬停上浮是纯装饰位移：减少动态效果时直接取消，只留下投影变化。 */
+  .group:hover {
+    transform: none;
   }
 }
