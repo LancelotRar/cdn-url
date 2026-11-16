@@ -507,8 +507,8 @@ body {
   margin: var(--space-12);
   padding: var(--space-4);
   border: 1px solid var(--card-line);
-  /* 与外层卡片同圆角，不做胶囊。 */
-  border-radius: var(--radius-card);
+  /* 控件档圆角（与按钮一致）：18px 在半高 40px 上仍会看成胶囊。 */
+  border-radius: var(--radius-block);
   background: color-mix(in srgb, var(--text) 5%, transparent);
 }
 
@@ -522,8 +522,8 @@ body {
   top: 0;
   left: 0;
   border: 1px solid var(--accent);
-  /* 轨道圆角 18px 减去 4px 内边距，滑块与轨道同心。 */
-  border-radius: calc(var(--radius-card) - var(--space-4));
+  /* 轨道圆角 10px 减去 4px 内边距，滑块与轨道同心。 */
+  border-radius: calc(var(--radius-block) - var(--space-4));
   background: var(--accent);
   box-shadow: 0 2px 12px -4px color-mix(in srgb, var(--accent) 60%, transparent);
   transition:
@@ -922,7 +922,8 @@ details[open] > summary::before {
   gap: var(--space-2);
   padding: var(--space-3);
   border: 1px solid var(--card-line);
-  border-radius: 999px;
+  /* 与参考区分段控件、动作按钮同一档圆角，不做胶囊。 */
+  border-radius: var(--radius-block);
   background: color-mix(in srgb, var(--text) 5%, transparent);
 }
 
@@ -932,7 +933,8 @@ details[open] > summary::before {
   top: 0;
   left: 0;
   z-index: 0;
-  border-radius: 999px;
+  /* 轨道圆角 10px 减去 3px 内边距，滑块与轨道同心。 */
+  border-radius: calc(var(--radius-block) - var(--space-3));
   background: var(--accent);
   box-shadow: 0 2px 12px -4px color-mix(in srgb, var(--accent) 60%, transparent);
   transition:
@@ -946,7 +948,7 @@ details[open] > summary::before {
   z-index: 1;
   padding: var(--space-5) 13px;
   border: 0;
-  border-radius: 999px;
+  border-radius: calc(var(--radius-block) - var(--space-3));
   background: transparent;
   color: var(--muted);
   font-family: var(--font-mono);
