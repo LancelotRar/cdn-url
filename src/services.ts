@@ -171,8 +171,8 @@ export function hostName(endpoint: string): string {
   return new URL(endpoint).hostname;
 }
 
-/** 主机短名取首段（cdn / fastly / gcore / testingcf），窄屏也放得下。 */
-export function hostShortName(endpoint: string): string {
+/** 主机短名取首段（cdn / fastly / gcore / testingcf），窄屏也放得下；只服务选项卡短名。 */
+function hostShortName(endpoint: string): string {
   return hostName(endpoint).split(".")[0];
 }
 
