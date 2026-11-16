@@ -63,7 +63,7 @@
   --tag-neutral-face: rgba(0, 0, 0, 0.05);
   --tag-neutral-line: rgba(0, 0, 0, 0.08);
 
-  --radius-card: 16px;
+  --radius-card: 18px;
   --radius-block: 10px;
   --radius-tag: 5px;
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -292,13 +292,13 @@ body {
   margin-top: var(--space-10);
 }
 
-/* 输入卡：内凹面（比主卡面深一档的底 + 内凹内阴影），圆角比主卡面小一档。 */
+/* 输入卡是主卡面：比页面底亮一档，才撑得起里面那口「井」。 */
 .composer {
   padding: 20px;
-  border: 1px solid var(--inset-line);
+  border: 1px solid var(--card-line);
   border-radius: var(--radius-card);
-  background: var(--inset-face);
-  box-shadow: var(--inset-inner), var(--inset-shadow);
+  background: var(--card-face);
+  box-shadow: var(--card-shadow);
 }
 
 .composer-head {
@@ -433,7 +433,7 @@ body {
   margin-top: var(--space-10);
 }
 
-/* 输入框是挖在输入卡里的井：同一内凹面，靠 hairline 与内阴影分层。 */
+/* 输入框是挖在主卡面里的井：更暗一档的底 + 内凹内阴影 + 小投影。 */
 .source-input {
   display: block;
   width: 100%;
@@ -443,7 +443,7 @@ body {
   border: 1px solid var(--inset-line);
   border-radius: var(--radius-block);
   background: var(--inset-face);
-  box-shadow: var(--inset-inner);
+  box-shadow: var(--inset-inner), var(--inset-shadow);
   color: var(--text);
   font-family: var(--font-mono);
   font-size: 14px;
@@ -463,7 +463,7 @@ body {
 .source-input:focus {
   border-color: var(--accent);
   outline: none;
-  box-shadow: 0 0 0 3px var(--accent-soft), var(--inset-inner);
+  box-shadow: 0 0 0 3px var(--accent-soft), var(--inset-inner), var(--inset-shadow);
 }
 
 .source-input:focus-visible {
