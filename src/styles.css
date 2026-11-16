@@ -1187,32 +1187,33 @@ details[open] > summary::before {
   background: color-mix(in srgb, var(--text) 5%, transparent);
 }
 
-/* 顶部居中的横幅提示：成功绿、失败红；不拦截点击，免得挡住页首开关。 */
+/* 顶部整宽横幅：成功绿、失败红；压在最上方，正好占住页首留白那一条，不挡标题。 */
 .toast {
   position: fixed;
-  top: var(--space-24);
-  left: 50%;
+  top: 0;
+  left: 0;
   z-index: 20;
-  max-width: calc(100vw - 48px);
-  padding: var(--space-8) var(--space-16);
-  border: 1px solid transparent;
-  border-radius: var(--radius-block);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 32px;
+  border-bottom: 1px solid transparent;
   font-size: 13.5px;
   font-weight: 600;
+  text-align: center;
   pointer-events: none;
-  transform: translateX(-50%);
-  box-shadow: var(--shadow-2);
 }
 
 .toast[data-tone="success"] {
-  border-color: color-mix(in srgb, var(--ok) 25%, transparent);
-  background: var(--ok-soft);
+  border-bottom-color: color-mix(in srgb, var(--ok) 30%, transparent);
+  background: color-mix(in srgb, var(--ok) 14%, var(--bg));
   color: var(--ok);
 }
 
 .toast[data-tone="error"] {
-  border-color: color-mix(in srgb, var(--danger) 25%, transparent);
-  background: var(--danger-soft);
+  border-bottom-color: color-mix(in srgb, var(--danger) 30%, transparent);
+  background: color-mix(in srgb, var(--danger) 14%, var(--bg));
   color: var(--danger);
 }
 
@@ -1296,7 +1297,8 @@ details[open] > summary::before {
 
 @media (max-width: 560px) {
   .shell {
-    padding: var(--space-22) var(--space-18) 76px;
+    /* 顶部留白与横幅同高（32px），横幅出现时不会压住标题。 */
+    padding: 32px var(--space-18) 76px;
   }
 
   /* 窄屏收紧能力标签，四项通常能排在同一行，避免最后一枚标签单独换行。 */
