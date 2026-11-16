@@ -1271,6 +1271,18 @@ details[open] > summary::before {
   }
 }
 
+/* 更宽的屏幕上给右栏多一点宽度：支撑矩阵的四列需要它，否则表头只能两行起。 */
+@media (min-width: 1280px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 420px;
+  }
+
+  /* 右栏变宽后把首列收窄，四个源类型列各自多出 12px，表头基本能一行放下。 */
+  .matrix thead th:first-child {
+    width: 32%;
+  }
+}
+
 @media (max-width: 560px) {
   .shell {
     padding: var(--space-22) var(--space-18) 76px;

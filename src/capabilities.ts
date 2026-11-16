@@ -3,8 +3,8 @@ import type { ServiceCatalog, SourceType } from "./types";
 /** 四类源类型的界面文案。只影响显示，能力判断全部来自 `convert` 返回的目录。 */
 const SOURCE_TYPE_LABELS: Record<SourceType, string> = {
   "repo-file": "仓库单文件",
-  gist: "gist 直链",
-  "release-asset": "release 资产",
+  gist: "Gist 直链",
+  "release-asset": "Release 资产",
   archive: "归档包",
 };
 
