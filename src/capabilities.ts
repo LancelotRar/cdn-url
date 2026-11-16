@@ -58,7 +58,9 @@ export function renderMatrix(catalog: ServiceCatalog): HTMLElement {
 
     const name = document.createElement("th");
     name.scope = "row";
-    name.textContent = entry.serviceName;
+    // 一条记录一行，显示端点主机名：jsDelivr 主入口在这里是 cdn.jsdelivr.net 本身。
+    name.textContent = entry.host;
+    name.title = entry.host;
     row.append(name);
 
     for (const sourceType of catalog.sourceTypes) {
@@ -66,28 +68,6 @@ export function renderMatrix(catalog: ServiceCatalog): HTMLElement {
     }
 
     tbody.append(row);
-
-    // 备用入口作为子行跟在所属主服务之后：缩进 + 弱化，不另计为一条加速服务。
-    for (const fallback of entry.fallbacks) {
-      const subRow = document.createElement("tr");
-      subRow.className = "matrix-fallback";
-
-      const subName = document.createElement("th");
-      subName.scope = "row";
-      subName.textContent = fallback.shortName;
-      subName.title = fallback.serviceName;
-      subName.setAttribute(
-        "aria-label",
-        `${fallback.serviceName}（${entry.serviceName} 的备用入口）`,
-      );
-      subRow.append(subName);
-
-      for (const sourceType of catalog.sourceTypes) {
-        subRow.append(matrixCell(fallback.capabilities.includes(sourceType)));
-      }
-
-      tbody.append(subRow);
-    }
   }
 
   table.append(thead, tbody);

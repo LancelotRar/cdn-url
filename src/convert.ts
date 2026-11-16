@@ -1,8 +1,7 @@
 import { identityOf, labelOf, normalize } from "./normalize";
-import { SERVICES, buildAcceleratedUrl, hostShortName } from "./services";
+import { SERVICES, buildAcceleratedUrl, hostName } from "./services";
 import type {
   CatalogEntry,
-  CatalogFallback,
   ConversionResult,
   ConversionSummary,
   NormalizedTarget,
@@ -88,26 +87,34 @@ export function convert(text: string): ConversionResult {
 
 /**
  * 服务目录与组头标签共用同一份注册表。
- * 矩阵按主服务成行，备用入口挂在所属主服务的 `fallbacks` 下作为子行。
+ * 矩阵一条记录一行：主服务之后紧跟它名下的备用入口，二者并列枚举、不嵌套。
  */
 function buildCatalog(): ServiceCatalog {
+  const entries: CatalogEntry[] = [];
+
+  for (const service of SERVICES) {
+    if (service.fallbackOf !== undefined) {
+      continue;
+    }
+
+    entries.push(catalogEntry(service));
+    for (const fallback of SERVICES) {
+      if (fallback.fallbackOf === service.id) {
+        entries.push(catalogEntry(fallback));
+      }
+    }
+  }
+
+  return { sourceTypes: SOURCE_TYPES, services: entries };
+}
+
+/** 矩阵一行：名字与端点主机名可能不同（jsDelivr 主入口显示的是自己的真实主机）。 */
+function catalogEntry(service: Service): CatalogEntry {
   return {
-    sourceTypes: SOURCE_TYPES,
-    services: SERVICES.filter((service) => service.fallbackOf === undefined).map(
-      (service): CatalogEntry => ({
-        serviceId: service.id,
-        serviceName: service.name,
-        capabilities: service.capabilities,
-        fallbacks: SERVICES.filter((candidate) => candidate.fallbackOf === service.id).map(
-          (fallback): CatalogFallback => ({
-            serviceId: fallback.id,
-            serviceName: fallback.name,
-            capabilities: fallback.capabilities,
-            shortName: hostShortName(fallback.endpoint),
-          }),
-        ),
-      }),
-    ),
+    serviceId: service.id,
+    serviceName: service.name,
+    host: hostName(service.endpoint),
+    capabilities: service.capabilities,
   };
 }
 

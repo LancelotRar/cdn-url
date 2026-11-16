@@ -1173,18 +1173,6 @@ details[open] > summary::before {
   white-space: nowrap;
 }
 
-/* 备用入口是主服务的子行：缩进 + 弱化，视觉上不另计为一条加速服务。 */
-.matrix tbody tr.matrix-fallback th {
-  padding-left: var(--space-16);
-  color: var(--muted);
-}
-
-.matrix tbody tr.matrix-fallback th::before {
-  content: "↳";
-  margin-right: var(--space-4);
-  color: var(--faint);
-}
-
 .matrix-cell {
   text-align: center;
 }
@@ -1244,6 +1232,10 @@ details[open] > summary::before {
     top: var(--space-24);
     max-height: calc(100vh - 48px);
     overflow-y: auto;
+    /* 右栏是滚动容器，会把自己子元素的投影裁在边界上；把卡片投影改画在容器上，
+       视觉与左侧结果卡一致。 */
+    border-radius: var(--radius-card);
+    box-shadow: var(--card-shadow);
     /* 两个面板高度不同，滚动条一会有一会没有；直接不画滚动条，滚轮与触控板仍能滚右栏，
        切换面板时内容宽度与页面右边缘都不再跳。 */
     scrollbar-width: none;
@@ -1255,6 +1247,11 @@ details[open] > summary::before {
   .rail::-webkit-scrollbar {
     width: 0;
     height: 0;
+  }
+
+  /* 投影已经画在滚动容器上，卡片自己不再重复画一遍。 */
+  .rail-card {
+    box-shadow: none;
   }
 
   .rail-panel {
@@ -1274,15 +1271,15 @@ details[open] > summary::before {
   }
 }
 
-/* 更宽的屏幕上给右栏多一点宽度：支撑矩阵的四列需要它，否则表头只能两行起。 */
+/* 更宽的屏幕上给右栏多一点宽度：矩阵要同时容纳完整主机名与四个源类型列。 */
 @media (min-width: 1280px) {
   .layout {
-    grid-template-columns: minmax(0, 1fr) 420px;
+    grid-template-columns: minmax(0, 1fr) 480px;
   }
 
-  /* 右栏变宽后把首列收窄，四个源类型列各自多出 12px，表头基本能一行放下。 */
+  /* 首列要放得下 testingcf.jsdelivr.net（约 152px），余下的宽度均分给四个类型列。 */
   .matrix thead th:first-child {
-    width: 32%;
+    width: 40%;
   }
 }
 
