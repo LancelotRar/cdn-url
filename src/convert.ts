@@ -1,5 +1,5 @@
 import { identityOf, labelOf, normalize } from "./normalize";
-import { SERVICES, buildAcceleratedUrl, hostName } from "./services";
+import { SERVICES, buildAcceleratedUrl, hostName, variantLabelOf } from "./services";
 import type {
   CatalogEntry,
   ConversionResult,
@@ -177,6 +177,7 @@ function variantOf(
     serviceId: service.id,
     serviceName: service.name,
     endpoint: service.endpoint,
+    label: variantLabelOf(service),
     isFallback,
     rows: [...rows],
   };

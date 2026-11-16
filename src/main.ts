@@ -3,7 +3,7 @@ import "./styles.css";
 import { renderCapabilityTags, renderMatrix } from "./capabilities";
 import { copyText } from "./clipboard";
 import { convert } from "./convert";
-import { hostName, hostShortName } from "./services";
+import { hostName } from "./services";
 import type {
   ConversionResult,
   ConversionSummary,
@@ -535,16 +535,17 @@ function renderGroup(group: ServiceGroup, enterDelayMs: number | null): HTMLElem
     glider.setAttribute("aria-hidden", "true");
 
     tabs = group.variants.map((variant, index) => {
+      const endpointHost = hostName(variant.endpoint);
       const tab = document.createElement("button");
       tab.type = "button";
       tab.className = "host-tab";
       tab.id = groupHostTabId(group.serviceId, variant.serviceId);
       tab.setAttribute("role", "tab");
       tab.setAttribute("aria-controls", panel.id);
-      // 短名给眼睛与窄屏，完整域名进悬浮提示与读屏文本。
-      tab.title = hostName(variant.endpoint);
-      tab.textContent = hostShortName(variant.endpoint);
-      tab.setAttribute("aria-label", `${hostShortName(variant.endpoint)}（${hostName(variant.endpoint)}）`);
+      // 短名给眼睛与窄屏，完整域名进悬浮提示与读屏文本；短名由结果模型给出。
+      tab.title = endpointHost;
+      tab.textContent = variant.label;
+      tab.setAttribute("aria-label", `${variant.label}（${endpointHost}）`);
       tab.addEventListener("click", () => select(index, false));
       return tab;
     });
