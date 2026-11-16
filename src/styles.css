@@ -183,7 +183,7 @@ body {
   padding: 32px 28px 104px;
 }
 
-/* 品牌行 */
+/* 品牌行：单行字标，logo 方块与站名同高，不再充当落地页头图。 */
 .brand {
   display: flex;
   align-items: center;
@@ -191,39 +191,39 @@ body {
   margin-bottom: 30px;
 }
 
+/* 字标方块：去填充，只留 hairline；内部六边形线稿按新方块等比缩放。 */
 .brand-mark {
   display: grid;
   flex: none;
   place-items: center;
-  width: 40px;
-  height: 40px;
-  border: 1px solid var(--accent-line);
-  border-radius: 12px;
-  background: var(--accent-soft);
-  color: var(--accent);
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--card-line);
+  border-radius: 8px;
+  color: var(--text);
 }
 
 .brand-mark svg {
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  height: 18px;
 }
 
 .brand-copy {
   min-width: 0;
 }
 
+/* 字号降级是「字号不动」的唯一例外，只限页首这一块。 */
 .brand-copy h1 {
   margin: 0;
-  font-size: clamp(24px, 2.4vw, 33px);
+  font-size: 13.5px;
   font-weight: 650;
   line-height: 1.25;
-  letter-spacing: -0.02em;
 }
 
 .brand-copy p {
   margin: var(--space-2) 0 0;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .theme-toggle {
@@ -269,13 +269,14 @@ body {
   display: none;
 }
 
+/* 事实标签：标签面的中性变体（5% 前景底 / 8% 前景边），圆角矩形不是胶囊。 */
 .brand-badge {
   flex: none;
   margin-left: 0;
   padding: var(--space-5) 11px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--surface);
+  border: 1px solid var(--tag-neutral-line);
+  border-radius: var(--radius-tag);
+  background: var(--tag-neutral-face);
   color: var(--muted);
   font-size: 12px;
   letter-spacing: 0.02em;
@@ -291,12 +292,13 @@ body {
   margin-top: var(--space-10);
 }
 
+/* 输入卡：内凹面（比主卡面深一档的底 + 内凹内阴影），圆角比主卡面小一档。 */
 .composer {
   padding: 20px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--inset-line);
   border-radius: var(--radius-card);
-  background: var(--surface);
-  box-shadow: var(--shadow-1);
+  background: var(--inset-face);
+  box-shadow: var(--inset-inner), var(--inset-shadow);
 }
 
 .composer-head {
@@ -360,17 +362,20 @@ body {
     color 120ms var(--ease);
 }
 
+/* 次级动作：中性半透明底 + hairline + 主色文字，低对比胶囊，不与主操作抢注意力。 */
 .btn-soft {
   border-color: var(--border);
-  background: var(--surface-2);
-  color: var(--text);
+  background: color-mix(in srgb, var(--text) 5%, transparent);
+  color: var(--accent);
+  border-radius: 999px;
 }
 
 .btn-soft:hover {
-  border-color: var(--border-strong);
-  background: var(--surface-3);
+  border-color: var(--accent-line);
+  background: color-mix(in srgb, var(--text) 9%, transparent);
 }
 
+/* 空状态与卡面同材质：hairline 实线取代旧的虚线占位框。 */
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -378,9 +383,10 @@ body {
   gap: var(--space-6);
   margin-top: 26px;
   padding: 48px 28px;
-  border: 1px dashed var(--border-strong);
+  border: 1px solid var(--card-line);
   border-radius: var(--radius-card);
-  background: linear-gradient(180deg, var(--surface), var(--surface-2));
+  background: var(--card-face);
+  box-shadow: var(--card-shadow);
   text-align: center;
 }
 
@@ -388,16 +394,17 @@ body {
   display: none;
 }
 
+/* 引导图标：中性次级面，不占主色，尺寸与圆角保持原值。 */
 .empty-icon {
   display: grid;
   place-items: center;
   width: 48px;
   height: 48px;
   margin-bottom: var(--space-4);
-  border: 1px solid var(--accent-line);
+  border: 1px solid var(--card-line);
   border-radius: 12px;
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--surface-2);
+  color: var(--muted);
 }
 
 .empty-icon svg {
@@ -426,15 +433,17 @@ body {
   margin-top: var(--space-10);
 }
 
+/* 输入框是挖在输入卡里的井：同一内凹面，靠 hairline 与内阴影分层。 */
 .source-input {
   display: block;
   width: 100%;
   min-height: 148px;
   max-height: 320px;
   padding: var(--space-16);
-  border: 1px solid var(--border);
+  border: 1px solid var(--inset-line);
   border-radius: var(--radius-block);
-  background: var(--surface-2);
+  background: var(--inset-face);
+  box-shadow: var(--inset-inner);
   color: var(--text);
   font-family: var(--font-mono);
   font-size: 14px;
@@ -450,10 +459,11 @@ body {
   border-color: var(--border-strong);
 }
 
+/* 聚焦只加天蓝柔和环，内阴影保留，避免读到「跳出井口」的跳变。 */
 .source-input:focus {
   border-color: var(--accent);
   outline: none;
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  box-shadow: 0 0 0 3px var(--accent-soft), var(--inset-inner);
 }
 
 .source-input:focus-visible {
