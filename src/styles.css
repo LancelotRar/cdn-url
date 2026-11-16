@@ -33,8 +33,8 @@
   --shadow-2: 0 14px 40px -20px rgba(17, 17, 19, 0.28);
 
   /* 页面底三段径向渐变：左上偏冷、右上偏紫、底部偏深。 */
-  --bg-grad-top-left: radial-gradient(900px 520px at 8% -6%, rgba(0, 113, 227, 0.18), transparent 70%);
-  --bg-grad-top-right: radial-gradient(820px 520px at 96% 0%, rgba(124, 58, 237, 0.16), transparent 72%);
+  --bg-grad-top-left: radial-gradient(900px 520px at 8% -6%, rgba(0, 113, 227, 0.12), transparent 70%);
+  --bg-grad-top-right: radial-gradient(820px 520px at 96% 0%, rgba(124, 58, 237, 0.1), transparent 72%);
   --bg-grad-bottom: radial-gradient(1100px 620px at 50% 118%, rgba(17, 17, 19, 0.1), transparent 74%);
 
   /* 主卡面：半透明实底 + hairline + 顶部内高光 + 中距离投影。 */
@@ -123,8 +123,8 @@
   --shadow-2: 0 18px 44px -22px rgba(0, 0, 0, 0.85);
 
   /* 页面底三段径向渐变：左上偏冷、右上偏紫、底部偏深。 */
-  --bg-grad-top-left: radial-gradient(900px 520px at 8% -6%, rgba(56, 189, 248, 0.2), transparent 70%);
-  --bg-grad-top-right: radial-gradient(820px 560px at 96% 0%, rgba(139, 92, 246, 0.22), transparent 72%);
+  --bg-grad-top-left: radial-gradient(900px 520px at 8% -6%, rgba(56, 189, 248, 0.13), transparent 70%);
+  --bg-grad-top-right: radial-gradient(820px 560px at 96% 0%, rgba(139, 92, 246, 0.15), transparent 72%);
   --bg-grad-bottom: radial-gradient(1100px 620px at 50% 120%, rgba(0, 0, 0, 0.6), transparent 74%);
 
   /* 主卡面：半透明实底 + hairline + 顶部内高光 + 中距离投影。 */
@@ -134,7 +134,7 @@
   --card-shadow: var(--card-highlight), 0 6px 22px rgba(0, 0, 0, 0.45);
   --card-shadow-hover:
     var(--card-highlight), 0 14px 34px rgba(0, 0, 0, 0.55),
-    0 0 0 1px rgba(56, 189, 248, 0.5);
+    0 0 0 1px rgba(56, 189, 248, 0.35);
 
   /* 内凹面：比卡面深一档，配内阴影与小投影。 */
   --inset-face: rgba(9, 9, 13, 0.55);
